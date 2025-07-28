@@ -1,6 +1,7 @@
 module MessagePassingRulesBase
 
-using BayseBase, MacroTools
+using BayesBase
+using MacroTools
 
 include("interfaces/factornodes.jl")
 

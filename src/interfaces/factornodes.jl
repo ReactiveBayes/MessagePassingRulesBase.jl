@@ -3,7 +3,14 @@ export Deterministic, Stochastic, isdeterministic, isstochastic, sdtype
 export nodefunction
 export as_node_symbol
 export collect_factorisation, collect_meta, default_meta
-export AbstractFactorNode, functionalform, getinterfaces, getinterface, getinboundinterfaces, getlocalclusters, interfaceindex, interfaceindices
+export AbstractFactorNode,
+    functionalform,
+    getinterfaces,
+    getinterface,
+    getinboundinterfaces,
+    getlocalclusters,
+    interfaceindex,
+    interfaceindices
 export interfaces, inputinterfaces, alias_interface
 
 export @node
@@ -325,7 +332,7 @@ function generate_node_expression(node_fform, node_type, node_interfaces)
 
         MessagePassingRulesBase.sdtype(::$dispatch_type)          = (MessagePassingRulesBase.$node_type)()
         MessagePassingRulesBase.interfaces(::$dispatch_type)      = Val($(Tuple(map(first, interfaces))))
-        MessagePassingRulesBase.inputinterfaces(::$dispatch_type) = Val($(Tuple(map(first, skipindex(interfaces, 1)))))
+        MessagePassingRulesBase.inputinterfaces(::$dispatch_type) = Val($(Tuple(map(first, interfaces[(begin + 1):end]))))
 
         $collect_factorisation_fn
         $nodefunctions
