@@ -1,9 +1,9 @@
-# PkgName
+# MessagePassingRulesBase
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://username.github.io/PkgName.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://username.github.io/PkgName.jl/dev/)
-[![Build Status](https://github.com/username/PkgName.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/username/PkgName.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/username/PkgName.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/username/PkgName.jl)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://username.github.io/MessagePassingRulesBase.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://username.github.io/MessagePassingRulesBase.jl/dev/)
+[![Build Status](https://github.com/username/MessagePassingRulesBase.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/username/MessagePassingRulesBase.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/username/MessagePassingRulesBase.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/username/MessagePassingRulesBase.jl)
 [![Aqua](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
 ## About

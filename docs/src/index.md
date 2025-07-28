@@ -1,10 +1,10 @@
 ```@meta
-CurrentModule = PkgName
+CurrentModule = MessagePassingRulesBase
 ```
 
-# PkgName
+# MessagePassingRulesBase
 
-Documentation for [PkgName](https://github.com/username/PkgName.jl).
+Documentation for [MessagePassingRulesBase](https://github.com/ReactiveBayes/MessagePassingRulesBase.jl).
 
 
 ```@index

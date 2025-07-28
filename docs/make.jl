@@ -1,16 +1,16 @@
-using PkgName
+using MessagePassingRulesBase
 using Documenter
 
-DocMeta.setdocmeta!(PkgName, :DocTestSetup, :(using PkgName); recursive = true)
+DocMeta.setdocmeta!(MessagePassingRulesBase, :DocTestSetup, :(using MessagePassingRulesBase); recursive = true)
 
 makedocs(;
-    modules = [PkgName],
-    authors = "Your Name <your.email@example.com> and contributors",
-    sitename = "PkgName.jl",
+    modules = [MessagePassingRulesBase],
+    authors = "Dmitry Bagaev <bvdmitri@gmail.com> and contributors",
+    sitename = "MessagePassingRulesBase.jl",
     format = Documenter.HTML(;
-        canonical = "https://username.github.io/PkgName.jl", edit_link = "main", assets = String[]
+        canonical = "https://reactivebayes.github.io/MessagePassingRulesBase.jl", edit_link = "main", assets = String[]
     ),
     pages = ["Home" => "index.md"]
 )
 
-deploydocs(; repo = "github.com/username/PkgName.jl", devbranch = "main")
+deploydocs(; repo = "github.com/ReactiveBayes/MessagePassingRulesBase.jl", devbranch = "main")
