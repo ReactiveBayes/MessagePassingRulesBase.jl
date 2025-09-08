@@ -274,8 +274,9 @@ function generate_node_expression(node_fform, node_type, node_interfaces)
         :(MessagePassingRulesBase.collect_factorisation(::$dispatch_type, factorisation::Tuple) = factorisation)
     else
         :(
-            MessagePassingRulesBase.collect_factorisation(::$dispatch_type, factorisation::Tuple) =
-                ($(ntuple(identity, length(interfaces))),)
+            MessagePassingRulesBase.collect_factorisation(::$dispatch_type, factorisation::Tuple) = (
+                $(ntuple(identity, length(interfaces))),
+            )
         )
     end
 
@@ -327,8 +328,7 @@ function generate_node_expression(node_fform, node_type, node_interfaces)
 
     # Define the necessary function types
     result = quote
-        @doc $doc MessagePassingRulesBase.is_predefined_node(::$dispatch_type) =
-            MessagePassingRulesBase.PredefinedNodeFunctionalForm()
+        @doc $doc MessagePassingRulesBase.is_predefined_node(::$dispatch_type) = MessagePassingRulesBase.PredefinedNodeFunctionalForm()
 
         MessagePassingRulesBase.sdtype(::$dispatch_type)          = (MessagePassingRulesBase.$node_type)()
         MessagePassingRulesBase.interfaces(::$dispatch_type)      = Val($(Tuple(map(first, interfaces))))
