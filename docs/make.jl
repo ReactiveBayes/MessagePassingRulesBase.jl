@@ -1,16 +1,8 @@
-# The documentation site of MessagePassingRulesBase. Build it with `make docs-base` from the
-# repository root, or `julia --project=docs docs/make.jl` here.
+# The documentation site of MessagePassingRulesBase. Build it with `julia --project=docs docs/make.jl`.
 using Documenter, DocumenterInterLinks
 using MessagePassingRulesBase
 
-# Another package's site, for `@extref` links: its planned address, and the inventory of its local
-# build, which must exist, so sites build in dependency order (`make docs-all`).
-sibling(name) = (
-    "https://reactivebayes.github.io/$(name).jl/dev/",
-    joinpath(@__DIR__, "..", "..", name, "docs", "build", "objects.inv"),
-)
-
-# This package depends on no sibling, so it links to none.
+# The site links to no other package's.
 links = InterLinks()
 
 DocMeta.setdocmeta!(MessagePassingRulesBase, :DocTestSetup, :(using MessagePassingRulesBase); recursive = true)
@@ -46,4 +38,10 @@ makedocs(
         prettyurls = get(ENV, "CI", nothing) == "true",
         example_size_threshold = 400 * 1024, size_threshold_warn = 400 * 1024, size_threshold = 400 * 1024,
     ),
+)
+
+deploydocs(
+    repo = "github.com/ReactiveBayes/MessagePassingRulesBase.jl.git",
+    devbranch = "main",
+    push_preview = true,
 )
