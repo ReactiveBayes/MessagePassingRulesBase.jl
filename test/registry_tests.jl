@@ -74,3 +74,14 @@ end
     @test probe("import MessagePassingRulesBase, FixtureHost, FixtureWeak; " * ext_state) == "true 1"
     @test probe("import MessagePassingRulesBase, FixtureWeak, FixtureHost; " * ext_state) == "true 1"
 end
+
+@testitem "registry:a redefined node replaces its entry" tags = [:base] begin
+    using MessagePassingRulesBase: registered_nodes
+    mod = Module()
+    Core.eval(mod, :(using MessagePassingRulesBase))
+    Core.eval(mod, :(struct Node end))
+    for _ in 1:2
+        Core.eval(mod, :(@define_factor_node(node = Node, type = Stochastic, interfaces = [:out, :in])))
+    end
+    @test length(registered_nodes(mod)) == 1
+end

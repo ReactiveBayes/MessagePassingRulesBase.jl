@@ -197,3 +197,8 @@ end
     @test isempty(methods(getnodefn, Tuple{Any, Any}, MessagePassingRulesBase))
     @test_throws MethodError getnodefn(nothing, Target(:out))
 end
+
+@testitem "nodes:interface groups" tags = [:base] setup = [ToyNodes] begin
+    using MessagePassingRulesBase: interface_groups
+    @test interface_groups(ToyNodes.Mixture) == (:inputs,)
+end

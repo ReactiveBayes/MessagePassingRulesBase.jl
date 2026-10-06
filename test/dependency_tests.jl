@@ -220,3 +220,13 @@ end
     @test contains(sprint(show, MIME"text/plain"(), spec), "⇐ q[:out, (:T, 1)], m[:in]")
     @test contains(sprint(show, MIME"text/html"(), spec), ">q[:out, (:T, 1)]</text>")
 end
+
+@testitem "dependencies:selections, displays and the plain constructor" tags = [:base] setup = [DependencyNodes] begin
+    using MessagePassingRulesBase: selection_arity, AllGroupMembers, TargetDependencies, dependencies_spec
+    @test selection_arity(AllGroupMembers(), 3) == 3
+    @test TargetDependencies(:out, false, ()).default == false
+    spec = dependencies_spec(DependencyNodes.DeltaFn, DependencyNodes.ToyDelta())
+    @test startswith(repr(spec), "DependenciesSpec(") && contains(repr(spec), "DeltaFn") && contains(repr(spec), "ToyDelta")
+    @test contains(repr(MIME"text/plain"(), spec), "m[:in][!k]")
+    @test contains(repr(last(spec.targets)), "⇐")
+end

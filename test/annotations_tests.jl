@@ -33,3 +33,14 @@ end
     @test annotate!(none, :note, 1.0) === nothing
     @test sizeof(none) == 0
 end
+
+@testitem "annotations:no store, and a rule's annotations" tags = [:base] begin
+    using MessagePassingRulesBase: NoAnnotations, RuleAnnotations, AnnotationStore, getannotation, hasannotation, annotate!, as_annotations
+    @test_throws KeyError getannotation(NoAnnotations(), :k)
+    @test getannotation(NoAnnotations(), :k, 7) == 7
+    ann = RuleAnnotations(out = AnnotationStore())
+    annotate!(ann, :k, 1)
+    @test hasannotation(ann, :k) && getannotation(ann, :k) == 1 && getannotation(ann, :missing, 2) == 2
+    # A call given a rule's annotations passes them on as they are.
+    @test as_annotations(ann) === ann
+end

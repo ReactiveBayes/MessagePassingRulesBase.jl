@@ -268,6 +268,10 @@ end
     # Any service name is allowed: the context is whatever the caller supplies.
     @test rule(base..., kw(:args, :(())), kw(:body, :(() -> 1)), kw(:ctx, :((:gpu,)))) == ""
     @test contains(rule(kw(:node, :X), kw(:target, :out), kw(:args, :(())), kw(:body, :(() -> 1))), "`target` must be")
+    @test contains(rule(kw(:node, :X), kw(:target, 1), kw(:args, :(())), kw(:body, :(() -> 1))), "`target` must be `:out` or `(:m, k)`")
+    marginal(kw...) = expansion_error(Expr(:macrocall, Symbol("@define_marginal_update_rule"), LineNumberNode(1), kw...))
+    @test contains(marginal(kw(:node, :X), kw(:target, 1), kw(:args, :(())), kw(:body, :(() -> 1))), "a cluster like `(:y, :x)`")
+    @test contains(rule(base..., kw(:args, :((q[:y, 3],))), kw(:body, :((args) -> 1))), "a cluster member is a symbol like `:y`")
 end
 
 @testitem "rule macro:an average energy takes no output or scratch" tags = [:base] begin
