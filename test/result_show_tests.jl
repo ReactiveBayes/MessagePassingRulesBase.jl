@@ -280,3 +280,81 @@ end
     card = R.html(nodespec(R.Gauss))
     @test contains(card, "<style>") && contains(card, "--mprb-target:$(SVG_LIGHT.target)") && !contains(card, "xmlns")
 end
+
+@testmodule PathRules begin
+    using MessagePassingRulesBase
+    using MessagePassingRulesBase: AbstractAlgorithm, DefaultAlgorithm
+
+    struct Mixed end
+    @define_factor_node(node = Mixed, type = Stochastic, interfaces = [:out, :μ, :p...])
+    # Messages and marginals under the default algorithm, with a log scale from the inputs.
+    @define_message_update_rule(node = Mixed, target = :out, args = (m[:μ]::Real, q[:p]::Tuple), logscale = (args) -> 1.5, body = (args) -> args.m[:μ])
+    # Another algorithm, given as an instance: marginals only, and then both.
+    struct Other <: AbstractAlgorithm end
+    @define_message_update_rule(node = Mixed, target = :μ, algorithm = Other(), args = (q[:out]::Real,), body = (args) -> args.q[:out])
+    @define_message_update_rule(node = Mixed, target = :μ, algorithm = Other, args = (m[:out]::String, q[:p]::Tuple), body = (args) -> 0.0)
+    # Parametric algorithms, for the coverage table's column labels.
+    struct Order{N} <: AbstractAlgorithm end
+    @define_message_update_rule(node = Mixed, target = :μ, algorithm = Order{3}, args = (m[:out]::Real,), body = (args) -> 1.0)
+    @define_message_update_rule(node = Mixed, target = :μ, algorithm = Order{Union{Int, Float64}}, args = (m[:out]::Real,), body = (args) -> 2.0)
+    @define_message_update_rule(node = Mixed, target = :μ, algorithm = Order, args = (m[:out]::Int,), body = (args) -> 3.0)
+    @define_marginal_update_rule(node = Mixed, target = (:out, :μ), args = (m[:out]::Real, m[:μ]::Real), body = (args) -> (args.m[:out], args.m[:μ]))
+
+    # A node given by a function.
+    shift(x) = x + 1
+    @define_factor_node(node = shift, type = Deterministic, interfaces = [:out, :in])
+    @define_message_update_rule(node = shift, target = :out, args = (m[:in]::Real,), body = (args) -> args.m[:in] + 1)
+
+    # A rule for a node with no declaration, which names its algorithm.
+    struct Bare end
+    @define_message_update_rule(node = Bare, target = :out, algorithm = DefaultAlgorithm, args = (m[:x]::Real,), body = (args) -> args.m[:x])
+end
+
+@testitem "result display:modes, log scale sources and incoming log scales" tags = [:base] setup = [PathRules] begin
+    using MessagePassingRulesBase
+    P = PathRules
+    both = call_message_update_rule(P.Mixed, :out; m = (μ = 1.0,), q = (p = (1, 2),))
+    text = repr(MIME"text/plain"(), both)
+    @test contains(text, "· messages and marginals") && contains(text, "logscale   1.5  (computed from the inputs)")
+    @test contains(repr(MIME"text/plain"(), call_message_update_rule(P.Mixed, :μ; q = (out = 1.0,), algorithm = P.Other())), "· marginals")
+    @test contains(repr(MIME"text/plain"(), call_message_update_rule(P.Mixed, :μ; m = (out = "x",), q = (p = (1,),), algorithm = P.Other())), "· messages and marginals")
+    html = repr(MIME"text/html"(), call_message_update_rule(P.Mixed, :out; m = (μ = 1.0,), q = (p = (1, 2),), logscale = (μ = 0.5,)))
+    @test contains(html, "incoming log scale")
+    @test contains(repr(MIME"text/plain"(), getrule(both)), "logscale: a function of the inputs")
+end
+
+@testitem "result display:a node given by a function, and one with no declaration" tags = [:base] setup = [PathRules] begin
+    using MessagePassingRulesBase
+    using MessagePassingRulesBase: message_passing_rule, Target, DefaultAlgorithm, RuleArgs, drawing, nodespec
+    P = PathRules
+    @test contains(repr(MIME"text/html"(), call_message_update_rule(P.shift, :out; m = (in = 1.0,))), ">shift<")
+    @test repr(drawing(nodespec(P.shift))) == "Drawing(NodeSpec: shift (deterministic))"
+    # Without a declaration, the card draws the edges the call names.
+    bare = message_passing_rule(P.Bare, Target(:out), DefaultAlgorithm(), RuleArgs(m = (x = 1.0,)))
+    text = repr(MIME"text/plain"(), bare)
+    @test contains(text, "out  ◀══  target  1.0") && contains(text, "x    ──▶  m  1.0")
+end
+
+@testitem "display:two-argument forms and labels" tags = [:base] setup = [PathRules] begin
+    using MessagePassingRulesBase
+    using MessagePassingRulesBase: nodespec, rule_coverage, list_rules, RuleContext, NodeFunctionLogPdf, message_passing_rule, Target, DefaultAlgorithm, check_rules
+    P = PathRules
+    @test startswith(repr(nodespec(P.Mixed)), "NodeSpec(") && endswith(repr(nodespec(P.Mixed)), "Mixed, stochastic)")
+    @test startswith(repr(rule_coverage(P.Mixed)), "RuleCoverage(") && endswith(repr(rule_coverage(P.Mixed)), "Mixed)")
+    # Parametric algorithms label the coverage table's columns by their parameters.
+    table = repr(MIME"text/plain"(), rule_coverage(P.Mixed))
+    @test contains(table, "Order{3}") && contains(table, "Order{Union{Float64, Int64}}") && occursin(r"│ Order$"m, table)
+    marginal = only(filter(spec -> spec.kind === :marginal, list_rules(P.Mixed)))
+    @test contains(repr(MIME"text/plain"(), marginal), "(:out, :μ)")
+    ctx = repr(RuleContext(rng = 1))
+    @test startswith(ctx, "RuleContext(") && contains(ctx, "rng = 1")
+    density = NodeFunctionLogPdf(x -> -x^2)
+    @test density(2.0) == -4.0 && contains(repr(density), "NodeFunctionLogPdf")
+    # A call whose arguments are not a RuleArgs is named by their type.
+    err = try
+        message_passing_rule(P.Mixed, Target(:out), DefaultAlgorithm(), 1)
+    catch e
+        e
+    end
+    @test contains(sprint(showerror, err), "for arguments of type Int64")
+end

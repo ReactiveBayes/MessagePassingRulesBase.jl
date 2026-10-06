@@ -136,7 +136,6 @@ end
 logscale_source(::Real) = "declared"
 logscale_source(::Function) = "computed from the inputs"
 logscale_source(::FromBody) = "computed by the body"
-logscale_source(::Nothing) = "not declared"
 
 function logscale_label(r::RuleResult)
     logscale = r.logscale
@@ -146,11 +145,6 @@ function logscale_label(r::RuleResult)
     return string(value, "  (", logscale_source(r.rule.logscale), ")")
 end
 
-input_labels(m::Messages) = Pair{String, Any}["m[$(repr(key))]" => value for (key, value) in pairs(m.values)]
-input_labels(q::Marginals{N, T, J}) where {N, T, J} = Pair{String, Any}[
-    ["q[$(repr(key))]" => value for (key, value) in pairs(q.singles)];
-    ["q[$(repr(key))]" => value for (key, value) in zip(J, q.joints)]
-]
 
 # The other rules for the same node, target and kind, each with how it fits this call.
 function other_rules(r::RuleResult)

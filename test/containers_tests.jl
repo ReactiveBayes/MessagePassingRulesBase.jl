@@ -71,3 +71,11 @@ end
         @test public_equivalent(d) === d
     end
 end
+
+@testitem "containers:a joint of four, and RuleArgs from its parts" tags = [:base] begin
+    using MessagePassingRulesBase: RuleArgs, RuleLogScales, interactive_args, as_messages, as_marginals
+    args = interactive_args(NamedTuple(), NamedTuple(), ((:a, :b, :c, :d) => 1.0,))
+    @test args.q[:a, :b, :c, :d] == 1.0
+    @test RuleArgs(as_messages((x = 1.0,)), as_marginals(NamedTuple())).logscale === nothing
+    @test RuleArgs(m = (x = 1.0,), logscale = RuleLogScales(m = (x = 0.5,))).logscale.m[:x] == 0.5
+end

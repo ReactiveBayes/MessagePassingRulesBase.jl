@@ -91,6 +91,9 @@ end
     @test repr(undefined) == "UndefinedLogScale(:initial)"
     @test contains(repr(MIME"text/plain"(), UndefinedLogScale(:form_constraint)), "form constraint")
     @test contains(sprint(showerror, UndefinedLogScaleError(UndefinedLogScale(:missing_input))), "the message is missing")
+    @test contains(sprint(showerror, UndefinedLogScaleError(UndefinedLogScale(:fallback))), "computed by a rule fallback")
+    # A cause of an engine's own is shown with its detail.
+    @test contains(sprint(showerror, UndefinedLogScaleError(UndefinedLogScale(:custom, 3))), "custom: 3")
     @test with_logscale(1, 2) === with_logscale(result = 1, logscale = 2)
 end
 
