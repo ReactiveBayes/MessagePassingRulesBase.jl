@@ -38,4 +38,5 @@ fragments have no docstrings of their own.
 MessagePassingRulesBase.default_inputs_match
 MessagePassingRulesBase.WithLogScale
 MessagePassingRulesBase.FromBody
+MessagePassingRulesBase.Improper
 ```

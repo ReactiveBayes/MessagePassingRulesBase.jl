@@ -278,6 +278,8 @@ The node has no average energy, so an engine cannot compute a free energy with i
 - [Your first node](@ref tutorial-first-node) and
   [A deterministic node with a group](@ref tutorial-groups) cover rules under the default
   algorithm.
+- [A new message passing scheme](@ref tutorial-new-scheme) writes a whole scheme,
+  natural-gradient message passing, the same way.
 - [Algorithms and dependencies](@ref) describes the default scheme, extensions of the default and
   every form of a dependency.
 - [Defining nodes](@ref) and [Defining rules](@ref) cover the other keywords of the node and of

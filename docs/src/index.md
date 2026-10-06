@@ -20,7 +20,7 @@ You use the package for three things:
 
 A rule is an ordinary Julia function of its inputs. Julia dispatches it on the node, on the
 target and on the types of the incoming [messages](@ref glossary-message) and
-[marginals](@ref glossary-marginal). Because resolution is Julia's own dispatch, a rule defined
+[marginals](@ref glossary-marginal). Because [resolution](@ref glossary-resolution) is Julia's own dispatch, a rule defined
 in any loaded package is found.
 
 The package depends on BayesBase and on small numerical packages (FastCholesky,
@@ -38,48 +38,29 @@ MessagePassingRulesBase
 
 ## A first node and rule
 
-The node below is a [deterministic node](@ref glossary-deterministic-node), `out = in + c`, for
-a known shift `c`. It has one rule, for the message towards `out`. The messages are a small
-normal type that the example defines, a mean and a variance. A real rule package uses
-ExponentialFamily's distributions instead.
+A node, `out = in + 1`, with one rule, for the message towards `out`, called as an engine would
+call it:
 
 ```jldoctest overview
 julia> using MessagePassingRulesBase
 
-julia> struct Gauss   # a normal, by its mean and variance
-           m::Float64
-           v::Float64
-       end
+julia> struct Shift end   # out = in + 1
 
-julia> struct Shift end
-
-julia> @define_factor_node(node = Shift, type = Deterministic, interfaces = [:out, :in, :c])
+julia> @define_factor_node(node = Shift, type = Deterministic, interfaces = [:out, :in])
 
 julia> @define_message_update_rule(
-           node = Shift, target = :out,
-           args = (m[:in]::Gauss, m[:c]::Real),
-           logscale = 0,
-           body = (args) -> Gauss(args.m[:in].m + args.m[:c], args.m[:in].v),
+           node = Shift, target = :out, args = (m[:in]::Real,), logscale = 0,
+           body = (args) -> args.m[:in] + 1,
        )
 
-julia> result = @call_message_update_rule(node = Shift, target = :out, m = (in = Gauss(1.0, 2.0), c = 3.0));
+julia> result = @call_message_update_rule(node = Shift, target = :out, m = (in = 1.0,));
 
-julia> getresult(result)
-Gauss(4.0, 2.0)
-
-julia> getlogscale(result)
-0
+julia> getresult(result), getlogscale(result)
+(2.0, 0)
 ```
 
-The node's declaration names its [interfaces](@ref glossary-interface). The rule names its
-node, its target, the inputs it takes with their types, and its body. The call runs the rule as
-an engine would. It returns a [`RuleResult`](@ref): the message, its
-[log scale](@ref glossary-log-scale) and everything that produced them. An engine such as
-ReactiveMP builds the node in a graph from the same declaration. It runs the same rule whenever
-the rule's inputs change.
-
-[Your first node](@ref tutorial-first-node) builds a complete node step by step, with
-ExponentialFamily's distributions.
+[Your first node](@ref tutorial-first-node) builds a real node step by step, and explains each
+part.
 
 ## The site
 
@@ -87,6 +68,8 @@ ExponentialFamily's distributions.
   its belief propagation and variational rules. [A deterministic node with a group](@ref tutorial-groups)
   writes rules for a sum of any number of inputs. [A node with its own algorithm](@ref tutorial-algorithm)
   gives a node a parametrised algorithm and declares what its rules take.
+  [A new message passing scheme](@ref tutorial-new-scheme) writes natural-gradient message
+  passing as an algorithm and its rules.
 - [Defining nodes](@ref): [`@define_factor_node`](@ref), what a declaration records, and the
   queries that read it.
 - [Defining rules](@ref): the three rule macros, targets, the inputs a rule receives, the slots

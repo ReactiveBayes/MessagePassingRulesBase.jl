@@ -72,11 +72,13 @@ Whether rules under this algorithm are pure unless they say otherwise. An impure
 adds a method, `MessagePassingRulesBase.ispure(::Type{<:MyAlgorithm}) = false`, which covers each
 `MyAlgorithm{T}` of a parametric one as well.
 
-A pure rule mutates neither its inputs nor any state shared beyond one call, such as fields
-of its algorithm. It may write to its own output buffer and to scratch storage it owns, so
-in-place rules can be pure. Randomness comes from `ctx.rng`, which the caller owns; an
-algorithm that carries its own random number generator, or any other state that persists
-between calls, is impure.
+Pure means that a call has no effect anyone outside it can observe, apart from its result; it
+does not mean that the rule writes nothing. A pure rule may allocate intermediate arrays, write
+the output buffer an in-place rule is given (the buffer is handed over to hold the result), reuse
+its own scratch, which nothing else reads, draw from `ctx.rng`, which its caller owns, and warn or
+log. A rule is impure if it mutates an input, mutates its algorithm (a cache kept in a field, say),
+writes a global variable, a file or other state that later code reads, or carries its own random
+number generator in its algorithm.
 
 Purity is declared, not proved: the default is `true`. A rule may override its algorithm
 with `pure = false`, and an engine auditing purity must read the rule's own flag, so the

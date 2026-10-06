@@ -19,6 +19,7 @@ makedocs(
             "Your first node" => "tutorials/first-node.md",
             "A deterministic node with a group" => "tutorials/groups.md",
             "A node with its own algorithm" => "tutorials/algorithm.md",
+            "A new message passing scheme" => "tutorials/new-scheme.md",
         ],
         "Defining nodes" => "nodes.md",
         "Defining rules" => "rules.md",

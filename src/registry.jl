@@ -16,7 +16,8 @@ precompile image carries its own entries. A redefinition, at the REPL say, repla
 with the same key.
 
 It is for introspection only: listing, checking and displaying rules, and suggesting candidates
-when no rule fits. Resolution never reads it; it is Julia's dispatch.
+when no rule fits. Resolution, finding which rule runs, does not use it: Julia's dispatch finds
+the rule. See [What the registry is for](@ref inspecting-registry).
 
 See also [`registries`](@ref), [`registered_rules`](@ref).
 """

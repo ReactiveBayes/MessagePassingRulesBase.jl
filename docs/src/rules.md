@@ -352,7 +352,7 @@ end
 ```
 
 The check runs wherever the rule runs: in an engine, in a call by hand and in a test. A failed
-check is an error, not a reason to select another rule, since resolution has already chosen this
+check is an error, not a reason to select another rule, since [resolution](@ref glossary-resolution) has already chosen this
 one. A combination of inputs a node does not support at all is a rule of its own whose body raises
 the error, found by dispatch like any other.
 

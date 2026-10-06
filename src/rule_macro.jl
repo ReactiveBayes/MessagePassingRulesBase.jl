@@ -182,11 +182,14 @@ $(DOC_RULE_ALGORITHM)
   - a function of the inputs, over the slots `(algo, ctx, args)`, in that order:
     `logscale = (args) -> -log(abs(mean(args.m[:A])))`;
   - `from_body`: the body returns [`with_logscale`](@ref)`(result, logscale)`, for a log scale
-    computed alongside the result.
+    computed alongside the result;
+  - [`improper`](@ref): the message has no normalising constant, so no log scale exists, as for
+    an exact message whose integral is infinite.
 
   Default: none declared. The message's log scale is then an [`UndefinedLogScale`](@ref) naming
   the rule, which propagates through products; only [`require_logscale`](@ref) turns it into an
-  error.
+  error. Declaring `improper` gives an undefined log scale too, whose reason says that none
+  exists, where an omitted declaration says that it is not known.
 
 - `reads_logscale`: `true` if the rule reads the log scales of its inbound messages, as
   `args.logscale.m[:x]`. Its caller must then provide them: an engine does when it tracks log
@@ -450,6 +453,8 @@ function define_rule_expr(kind, source, macroargs)
             logscale_fn = :(($(ls_args...), $ls_target) -> $user_ls($(ls_passed...), $(ls_index...)))
         elseif declaration === :from_body
             logscale_fn = from_body
+        elseif declaration === :improper
+            logscale_fn = improper
         else
             # A number, checked by `RuleSpec`; a function written by its name is refused here, since
             # only a lambda tells which slots it takes.

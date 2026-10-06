@@ -39,7 +39,7 @@ What it declares, read as fields:
 - `annotates`: whether its body takes the `ann` slot, and so may write annotations on its
   result; an engine gives a rule that does not an annotation store nobody writes to;
 - `logscale`: what a message rule declares about its result's log scale: `nothing` for none, a
-  number, a function, or [`from_body`](@ref); `reads_logscale`: whether it reads its inbound
+  number, a function, [`from_body`](@ref) or [`improper`](@ref); `reads_logscale`: whether it reads its inbound
   messages' log scales;
 - `args_check`: the source of the check its inputs must pass as its body starts, or `nothing`
   for none (the definition macros' `args_check` keyword; a failure is a [`RuleInputError`](@ref));
@@ -88,7 +88,7 @@ function RuleSpec(;
     inplace && prealloc === nothing &&
         throw(ArgumentError("an in-place rule needs a `preallocate` function"))
     valid_logscale_declaration(logscale) ||
-        throw(ArgumentError("a rule's `logscale` is a number, a function of its inputs or `from_body`, got $(repr(logscale))"))
+        throw(ArgumentError("a rule's `logscale` is a number, a function of its inputs, `from_body` or `improper`, got $(repr(logscale))"))
     kind === :message || (logscale === nothing && !reads_logscale) ||
         throw(ArgumentError("only a message rule has a log scale; `logscale` and `reads_logscale` are for message rules"))
     effective = something(pure, algorithm <: AbstractAlgorithm ? ispure(algorithm) : true)

@@ -6,6 +6,25 @@ All notable changes to MessagePassingRulesBase.jl are documented here. The forma
 
 ## [Unreleased]
 
+### Added
+
+- `logscale = improper`, a declaration for a message rule whose message has no normalising
+  constant, as an exact message may: its log scale is an `UndefinedLogScale` whose cause is
+  `:improper`, and `require_logscale` says that none exists, where an omitted `logscale` says that
+  the log scale is not known (#9).
+- A tutorial, *A new message passing scheme*: natural-gradient message passing for a Poisson count
+  with a log rate, as an algorithm, a dependency declaration and a rule (#9).
+- A Makefile: `make test` (as CI runs it, with `test_args` to select items), `test-fast`, `docs`,
+  `docs-serve`, `format`, `check-format`, `clean` (#9).
+
+### Changed
+
+- Documentation, from the review in #9: what a pure rule may and may not do; what the registry is
+  for, with an example; *resolution* defined in the glossary and linked; improper messages on the
+  *Log scales* page; a shorter first example on the overview; the expectation propagation entry
+  pointing to the tutorial that builds such a rule; and an example in *Algorithms and
+  dependencies* told through its own node.
+
 ## [1.0.0]
 
 The first release: the rule system of the ReactiveMP ecosystem, developed in the

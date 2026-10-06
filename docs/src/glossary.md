@@ -64,7 +64,9 @@ are always its output and the joint over its inputs. See [`Deterministic`](@ref)
 ### [Expectation propagation](@id glossary-expectation-propagation)
 
 A message passing scheme that approximates each message by projecting the corresponding
-marginal onto a simpler family, usually by matching moments. The Probit node uses it.
+marginal onto a simpler family, usually by matching moments.
+[A node with its own algorithm](@ref tutorial-algorithm) builds a node whose rule towards its
+input is an expectation propagation rule.
 
 ### [Factor graph](@id glossary-factor-graph)
 
@@ -110,7 +112,8 @@ convention. An interface may have aliases, other names a model can use for it.
 
 The logarithm of a message's normalising constant: a message is
 ``\exp(\text{log scale}) \cdot p(x)`` with ``p`` a normalised distribution. Summed over a graph,
-log scales give the model's evidence. See [Log scales](@ref).
+log scales give the model's evidence. Only a message with a finite integral has one: an improper
+message, which an exact message can be, has none. See [Log scales](@ref).
 
 ### [Marginal](@id glossary-marginal)
 
@@ -136,6 +139,13 @@ enters a rule. `PointMass(2.0)` comes from BayesBase.
 
 The distribution of `f(x)` when `x` has a known distribution. A deterministic node's message
 towards its output is the pushforward of the messages on its inputs.
+
+### [Resolution](@id glossary-resolution)
+
+Finding the rule that runs for a call: the node, the target, the
+[algorithm](@ref glossary-algorithm) and the types of the inputs select one rule. It is Julia's
+method dispatch over the methods the definition macros generate, so it needs no list of rules.
+When no rule matches, the result is a [`RuleNotFound`](@ref). See [Calling rules](@ref).
 
 ### [Rule](@id glossary-rule)
 

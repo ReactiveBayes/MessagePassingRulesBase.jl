@@ -534,11 +534,12 @@ struct Gain end   # out = a ⋅ in
 `logscale` declares the message's [log scale](@ref glossary-log-scale): the scalar with
 `message = exp(logscale) · result`, for the normalised `result` the body returns. The message
 towards `in` is ``\mathcal{N}(a x \mid m, v) = |a|^{-1}\, \mathcal{N}(x \mid m/a, v/a^2)``, so its
-log scale is ``-\log|a|``, a function of the inputs. The keyword takes one of four forms:
+log scale is ``-\log|a|``, a function of the inputs. The keyword takes one of five forms:
 
 - a number, `logscale = 0`, when the constant does not depend on the inputs;
 - a function of the inputs over the slots `(algo, ctx, args)`, named in that order, as above;
 - `from_body`, when the body returns [`with_logscale`](@ref)`(result, logscale)`;
+- [`improper`](@ref), when the message has no normalising constant, so no log scale exists;
 - nothing: a rule that omits the keyword gives an [`UndefinedLogScale`](@ref) naming it.
 
 ```@example messages
