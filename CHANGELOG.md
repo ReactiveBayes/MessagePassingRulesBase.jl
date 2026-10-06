@@ -6,6 +6,8 @@ All notable changes to MessagePassingRulesBase.jl are documented here. The forma
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-06
+
 ### Added
 
 - `logscale = improper`, a declaration for a message rule whose message has no normalising
@@ -24,9 +26,15 @@ All notable changes to MessagePassingRulesBase.jl are documented here. The forma
   *Log scales* page; a shorter first example on the overview; the expectation propagation entry
   pointing to the tutorial that builds such a rule; and an example in *Algorithms and
   dependencies* told through its own node.
+- Tests cover the in-place marginal API, `message_passing_marginalrule!`, and the other paths
+  that had none, and two unreachable internal helpers are gone (#12).
 
-## [1.0.0]
+## [1.0.0] - 2026-10-05
 
 The first release: the rule system of the ReactiveMP ecosystem, developed in the
 [ReactiveMP](https://github.com/ReactiveBayes/ReactiveMP.jl) repository, whose history this
 repository keeps.
+
+[Unreleased]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/releases/tag/v1.0.0
