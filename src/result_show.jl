@@ -136,6 +136,7 @@ end
 logscale_source(::Real) = "declared"
 logscale_source(::Function) = "computed from the inputs"
 logscale_source(::FromBody) = "computed by the body"
+logscale_source(::Improper) = "none: the message is improper"
 logscale_source(::Nothing) = "not declared"
 
 function logscale_label(r::RuleResult)

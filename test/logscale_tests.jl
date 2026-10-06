@@ -17,6 +17,14 @@
     )
     # None declared.
     @define_message_update_rule(node = Scale, target = :out, args = (m[:in]::Int,), body = (args) -> 2 * args.m[:in])
+
+    # An improper message: the likelihood of a variance, whose integral is infinite.
+    struct Noise end   # out ~ N(0, v)
+    @define_factor_node(node = Noise, type = Stochastic, interfaces = [:out, :v])
+    @define_message_update_rule(
+        node = Noise, target = :v, args = (m[:out]::Real,), logscale = improper,
+        body = (args) -> (v -> -(log(2π * v) + args.m[:out]^2 / v) / 2),
+    )
 end
 
 @testitem "logscale:declarations" tags = [:base] setup = [LogScaleRules] begin
@@ -86,6 +94,28 @@ end
     @test with_logscale(1, 2) === with_logscale(result = 1, logscale = 2)
 end
 
+@testitem "logscale:improper" tags = [:base] setup = [LogScaleRules] begin
+    using MessagePassingRulesBase
+    L = LogScaleRules
+
+    result = call_message_update_rule(L.Noise, :v; m = (out = 1.0,))
+    @test getresult(result)(1.0) ≈ -(log(2π) + 1) / 2
+    logscale = getlogscale(result)
+    @test logscale isa UndefinedLogScale && !isdefined_logscale(logscale)
+    @test logscale.cause === :improper && logscale.detail === getrule(result)
+    @test getrule(result).logscale === improper
+    # It propagates as an undefined log scale does, and says that none exists where one is needed.
+    @test logscale + 1.0 === logscale
+    @test_throws UndefinedLogScaleError require_logscale(logscale)
+    text = sprint(showerror, UndefinedLogScaleError(logscale))
+    @test contains(text, "a log scale is needed but none exists")
+    @test contains(text, "Noise towards :v under") && contains(text, "gives an improper message: it has no normalising constant")
+    @test contains(repr(MIME"text/plain"(), result), "gives an improper message")
+    @test contains(repr(MIME"text/plain"(), getrule(result)), "logscale: none exists: the message is improper")
+    # A declaration not to know: an omitted `logscale` still reads as not declared.
+    @test getlogscale(call_message_update_rule(L.Scale, :out; m = (in = 1,))).cause === :no_declaration
+end
+
 @testitem "logscale:display" tags = [:base] setup = [LogScaleRules] begin
     using MessagePassingRulesBase
     L = LogScaleRules
@@ -121,7 +151,7 @@ end
         call_message_update_rule(N, :out; m = (in = 1.0,))
     )
 
-    @test failure(rule(:(logscale = "zero"), :(body = (args) -> 1))) |> msg -> contains(msg, "a number, a function of its inputs or `from_body`")
+    @test failure(rule(:(logscale = "zero"), :(body = (args) -> 1))) |> msg -> contains(msg, "a number, a function of its inputs, `from_body` or `improper`")
     @test failure(rule(:(reads_logscale = 1), :(body = (args) -> 1))) |> msg -> contains(msg, "`reads_logscale` must be `true` or `false`")
     @test failure(rule(:(logscale = (ann) -> 0), :(body = (args) -> 1))) |> msg -> contains(msg, "unknown logscale slot")
     @test failure(rule(:(logscale = sin), :(body = (args) -> 1))) |> msg -> contains(msg, "write it as a lambda")

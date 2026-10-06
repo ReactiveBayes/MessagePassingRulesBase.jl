@@ -4,7 +4,8 @@ CurrentModule = MessagePassingRulesBase
 
 # [Your first node](@id tutorial-first-node)
 
-This tutorial builds a [factor node](@ref glossary-factor-node) from nothing: a normal
+This tutorial builds a [factor node](@ref glossary-factor-node) step by step, starting from an
+empty module: a normal
 distribution with a known variance,
 
 ```math

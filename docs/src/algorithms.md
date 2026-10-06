@@ -56,7 +56,7 @@ MessagePassingRulesBase.default_algorithm
 ## Extending the default
 
 A subtype of [`DefaultAlgorithmExtension`](@ref) overrides some rules, or some dependencies, of
-the default, and inherits the rest. Resolution looks for the extension's own rule first. When
+the default, and inherits the rest. [Resolution](@ref glossary-resolution) looks for the extension's own rule first. When
 there is none, it falls back to the default's rule. That rule then runs with
 `DefaultAlgorithm()` in its `algo` slot, the algorithm it was written for.
 
@@ -122,8 +122,25 @@ A node may name a parametric algorithm as its own, `algorithm = T`. A rule that 
 
 ## Purity
 
-A rule is pure unless it is declared otherwise. A pure rule mutates neither its inputs nor any
-state shared beyond one call. It draws randomness only from `ctx.rng`, which the caller owns.
+A rule is pure unless it is declared otherwise. Pure means that a call has no effect anyone
+outside it can observe, apart from its result: running the rule leaves nothing changed that its
+caller did not hand it to change. It does not mean that the rule writes nothing.
+
+A pure rule may
+
+- allocate whatever intermediate arrays it needs;
+- write its output into the buffer an [in-place rule](@ref glossary-in-place-rule) is given,
+  since that buffer is handed over to hold the result;
+- reuse its own [scratch](@ref glossary-scratch), working memory that nothing else reads;
+- draw random numbers from `ctx.rng`, a generator its caller owns and passes in;
+- warn or log, for a degenerate input say, which changes no state another computation reads.
+
+A rule is impure if it
+
+- mutates an input, a message or a marginal it reads;
+- mutates its algorithm, a cache kept in one of its fields for instance;
+- writes a global variable, a file or any other state that later code reads;
+- carries its own random number generator in its algorithm.
 
 An algorithm that carries state of its own is impure, and it says so with a method of
 [`ispure`](@ref). A rule overrides its algorithm's purity with `pure = false` or `pure = true`.
@@ -199,9 +216,10 @@ MessagePassingRulesBase.free_energy_partition
 
 A rule may need one input that the factorisation does not give it, while its other inputs
 follow the factorisation as usual. `default` among a target's inputs stands for the inputs of the
-default scheme, and the inputs beside it are added to them. ContinuousTransition's rule towards
-`a`, for example, reads `q(a)`, the expansion point of its transformation, under both of its
-factorisations. The node below declares the same:
+default scheme, and the inputs beside it are added to them. Take a transition `y ~ f(x; a)` whose
+function is linearised around the mean of `a`. Its rule towards `a` needs `q(a)`, the expansion
+point, under every factorisation, including one where the default scheme gives it the message
+on `a` instead. The node below declares that:
 
 ```@example algorithms-extend
 using MessagePassingRulesBase

@@ -58,7 +58,7 @@ export @which_message_update_rule, @which_marginal_update_rule, @which_average_e
 export call_message_update_rule, call_marginal_update_rule, call_average_energy
 export which_message_update_rule, which_marginal_update_rule, which_average_energy
 export UndefinedLogScale, UndefinedLogScaleError, require_logscale, isdefined_logscale
-export with_logscale, from_body, getlogscale
+export with_logscale, from_body, improper, getlogscale
 export RuleResult, getresult, getrule, getannotations
 # Generic names a downstream package may well define for itself: public, not exported.
 @compat public getalgorithm, getcontext, getscratch, getarguments, gettarget

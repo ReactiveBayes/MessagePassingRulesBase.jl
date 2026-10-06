@@ -134,7 +134,7 @@ MessagePassingRulesBase.RuleInputError
 
 Code that builds its own [`RuleArgs`](@ref) resolves a rule with the `find_*` functions. They
 never throw: they return a [`RuleNotFound`](@ref) when nothing fits. The code then runs the rule
-with the `message_passing_*` functions, which do throw. Julia's dispatch does the resolution,
+with the `message_passing_*` functions, which do throw. Julia's dispatch does the [resolution](@ref glossary-resolution),
 over every loaded package.
 
 ```@docs

@@ -13,6 +13,8 @@ A log scale that is not known, with the reason: `cause` says why, `detail` what 
 The causes an engine and the base package record:
 - `:no_declaration`: the rule that computed the message declares no `logscale`; `detail` is its
   [`RuleSpec`](@ref);
+- `:improper`: the rule declares `logscale = `[`improper`](@ref): its message has no normalising
+  constant at all; `detail` is its [`RuleSpec`](@ref);
 - `:initial`: an initial message, not computed by a rule;
 - `:fallback`: a message computed by a rule fallback;
 - `:no_compute_logscale`: a product whose pair of distributions has no `compute_logscale`
@@ -52,6 +54,8 @@ function describe_undefined(io::IO, logscale::UndefinedLogScale)
     cause, detail = logscale.cause, logscale.detail
     if cause === :no_declaration
         print(io, "the ", detail isa RuleSpec ? rule_heading(detail, io) : "rule", " declares no `logscale`")
+    elseif cause === :improper
+        print(io, "the ", detail isa RuleSpec ? rule_heading(detail, io) : "rule", " gives an improper message: it has no normalising constant")
     elseif cause === :initial
         print(io, "the message is an initial one, not computed by a rule")
     elseif cause === :fallback
@@ -93,7 +97,7 @@ struct UndefinedLogScaleError <: Exception
 end
 
 function Base.showerror(io::IO, err::UndefinedLogScaleError)
-    print(io, "UndefinedLogScaleError: a log scale is needed but not known: ")
+    print(io, "UndefinedLogScaleError: a log scale is needed but ", err.logscale.cause === :improper ? "none exists: " : "not known: ")
     describe_undefined(io, err.logscale)
     return nothing
 end
@@ -185,6 +189,26 @@ The `logscale` declaration of a rule whose body computes its log scale: written
 const from_body = FromBody()
 
 """
+    Improper
+
+The type of [`improper`](@ref), the marker of a rule whose message has no log scale to declare.
+"""
+struct Improper end
+
+"""
+    improper
+
+The `logscale` declaration of a rule whose message is improper: written `logscale = improper`, it
+says that the message has no normalising constant, its integral being infinite, so no log scale
+exists to compute. An exact belief-propagation message may be so: the message
+`v ↦ N(y | μ, v)` towards a variance from an observed `y` decays only like `v^(-1/2)`. The
+message's log scale is then an [`UndefinedLogScale`](@ref) whose cause is `:improper`, which
+propagates as any undefined one does and which [`require_logscale`](@ref) reports as improper. A
+rule that declares no `logscale` says something else: that its log scale is not known.
+"""
+const improper = Improper()
+
+"""
     RuleLogScales(; m = NamedTuple())
 
 The log scales that arrived with a rule's inbound messages, `args.logscale` of a
@@ -209,12 +233,13 @@ and `nothing` for a marginal or an average energy.
 """
 function getlogscale end
 
-# A `logscale` declaration is a number, a function of the rule's inputs, `from_body`, or
-# `nothing`: the rule declares none.
-valid_logscale_declaration(declaration) = declaration === nothing || declaration isa Union{Real, Function, FromBody}
+# A `logscale` declaration is a number, a function of the rule's inputs, `from_body`, `improper`,
+# or `nothing`: the rule declares none.
+valid_logscale_declaration(declaration) = declaration === nothing || declaration isa Union{Real, Function, FromBody, Improper}
 
 describe_logscale_declaration(::Nothing) = "none"
 describe_logscale_declaration(::FromBody) = "from the body"
+describe_logscale_declaration(::Improper) = "none exists: the message is improper"
 describe_logscale_declaration(::Function) = "a function of the inputs"
 describe_logscale_declaration(declaration::Real) = string(declaration)
 
@@ -228,6 +253,7 @@ logscale_constant(name, declaration::Function) = throw(
 @inline rule_logscale(spec, ::Nothing, raw, algorithm, ctx, args, target) = UndefinedLogScale(:no_declaration, spec)
 @inline rule_logscale(spec, declaration::Real, raw, algorithm, ctx, args, target) = declaration
 @inline rule_logscale(spec, declaration::FromBody, raw, algorithm, ctx, args, target) = raw.logscale
+@inline rule_logscale(spec, ::Improper, raw, algorithm, ctx, args, target) = UndefinedLogScale(:improper, spec)
 @inline rule_logscale(spec, declaration::Function, raw, algorithm, ctx, args, target) = declaration(algorithm, ctx, args, target)
 
 # A rule declared `from_body` returns a `WithLogScale`; any other returns its result bare.

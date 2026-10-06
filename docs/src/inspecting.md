@@ -101,7 +101,7 @@ A rule package's tests check its rules in two ways:
 
 - against their nodes' declarations, with [`check_rules`](@ref);
 - against each other, with [`check_rule_ambiguities`](@ref). Two rules that some call matches
-  equally well make resolution throw a `MethodError`.
+  equally well make [resolution](@ref glossary-resolution) throw a `MethodError`.
 
 Each check takes the modules to check, every loaded module by default, and returns the problems
 it finds. Both lists are empty for this page's module:
@@ -118,11 +118,53 @@ MessagePassingRulesBase.check_rule_ambiguities
 MessagePassingRulesBase.duplicate_rules
 ```
 
-## The registries
+## [What the registry is for](@id inspecting-registry)
 
-Each module that defines nodes or rules keeps a registry of what it defined. The registry is
-filled when the module loads. It serves introspection only: listings, coverage, checks, and the
-near misses a [`RuleNotFoundError`](@ref) reports. Resolution never reads it.
+Each module that defines nodes or rules keeps a [`Registry`](@ref) of what it defined: its
+[`RuleSpec`](@ref)s, [`NodeSpec`](@ref)s and dependency declarations. The definition macros create
+it in the module, as the constant `__message_passing_registry__`, and fill it as the module loads.
+Each module keeps its own so that a package's precompiled image carries its own entries;
+[`registries`](@ref) gathers them from every loaded module.
+
+[Resolution](@ref glossary-resolution) does not use the registry. Julia's dispatch finds the rule
+for a call, through the methods the macros define. Dispatch cannot say which rules exist,
+though, and that is what the registry is for: everything that lists, counts or checks rules reads
+it. Take a module that defines a node and two rules:
+
+```@example registry
+using MessagePassingRulesBase
+
+module Coins
+using MessagePassingRulesBase
+struct Coin end   # out ~ Bernoulli(p)
+@define_factor_node(node = Coin, type = Stochastic, interfaces = [:out, :p])
+@define_message_update_rule(node = Coin, target = :out, args = (m[:p]::Real,), body = (args) -> args.m[:p])
+@define_message_update_rule(node = Coin, target = :p, args = (m[:out]::Real,), body = (args) -> args.m[:out])
+end
+
+length(MessagePassingRulesBase.registered_rules(Coins))
+```
+
+The registry lists the module's two rules. [`list_rules`](@ref) and [`rule_coverage`](@ref) read
+it, and so do [`check_rules`](@ref) and a test suite's rule-coverage gate:
+
+```@example registry
+MessagePassingRulesBase.rule_coverage(Coins.Coin)
+```
+
+A call that no rule takes fails with a [`RuleNotFoundError`](@ref), and its near misses, the
+rules that come closest, come from the registry too:
+
+```@example registry
+try
+    @call_message_update_rule(node = Coins.Coin, target = :out, m = (p = "half",))
+catch err
+    showerror(stdout, err)
+end
+```
+
+A call that matches never consults it. A rule a registry missed would still run; it just would
+not be listed, counted, checked or suggested.
 
 ```@docs
 MessagePassingRulesBase.Registry

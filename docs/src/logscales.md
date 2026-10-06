@@ -17,7 +17,9 @@ where ``\hat{p}`` is the distribution the rule returns.
 [Belief propagation](@ref glossary-belief-propagation) is the common case. A message
 ``\mu(x) = \int f(x, y, \dots) \prod_i \mu_i(y_i) \,\mathrm{d}y`` is in general not normalised.
 In an acyclic graph, the log scales of such messages add up to the log model evidence, which an
-engine can then read at any edge. A naive [variational](@ref glossary-vmp) message,
+engine can then read at any edge. A log scale exists only for a message whose integral is finite:
+an exact message may be improper, with no normalising constant at all
+([Improper messages](@ref logscales-improper)). A naive [variational](@ref glossary-vmp) message,
 ``\exp \mathbb{E}_q[\log f]``, has no constant with that meaning, so its log scale is undefined.
 
 This page covers the rule's side: what a rule declares, and how it reads the log scales of its
@@ -28,7 +30,7 @@ and what the evidence means.
 
 The normalised distribution a rule returns does not reveal its log scale. `Beta(2, 1)` looks the
 same whether or not a constant was divided out to get it. A message rule therefore states its
-log scale with the `logscale` keyword of [`@define_message_update_rule`](@ref), in one of four
+log scale with the `logscale` keyword of [`@define_message_update_rule`](@ref), in one of five
 forms:
 
 | form | when to use it |
@@ -36,6 +38,7 @@ forms:
 | a constant, `logscale = 0` | the rule's constant does not depend on its inputs |
 | a function of the inputs, `logscale = (args) -> …` | the constant depends on the inputs |
 | `logscale = from_body` | the constant shares its work with the result |
+| `logscale = improper` | the message is improper: it has no constant, so no log scale exists |
 | the keyword omitted | the log scale is undefined, as for every variational rule |
 
 A marginal rule and an average energy have no log scale, and they do not accept the keyword.
@@ -114,6 +117,47 @@ julia> getresult(result), getlogscale(result) ≈ log(2)
 
 julia> getlogscale(@call_message_update_rule(node = Halve, target = :in, m = (out = 1.0,)))
 UndefinedLogScale: the message rule for Halve towards :in under DefaultAlgorithm declares no `logscale`
+```
+
+### [Improper messages](@id logscales-improper)
+
+A message's normalising constant is its integral, and the integral may be infinite. The message
+is then improper, and no log scale exists to declare. An exact belief-propagation message can be
+so. Take a normal node with a known mean, `out ~ N(0, v)`, and `out` observed at ``y``. The
+message towards the variance is the likelihood
+
+```math
+v \mapsto \mathcal{N}(y \mid 0, v) = (2\pi v)^{-1/2} \exp\!\big(-y^2 / (2v)\big),
+```
+
+which decays only like ``v^{-1/2}`` as ``v`` grows, so its integral over ``v > 0`` is infinite.
+The rule declares `logscale = improper`. Its message's log scale is an
+[`UndefinedLogScale`](@ref) whose reason says so, and it propagates as any undefined one does:
+
+```jldoctest logscales
+julia> using MessagePassingRulesBase
+
+julia> struct Noise end   # out ~ N(0, v)
+
+julia> @define_factor_node(node = Noise, type = Stochastic, interfaces = [:out, :v])
+
+julia> @define_message_update_rule(
+           node = Noise, target = :v, args = (m[:out]::Real,),
+           logscale = improper,
+           body = (args) -> (v -> -(log(2π * v) + args.m[:out]^2 / v) / 2),   # the log-likelihood
+       )
+
+julia> getlogscale(@call_message_update_rule(node = Noise, target = :v, m = (out = 1.0,)))
+UndefinedLogScale: the message rule for Noise towards :v under DefaultAlgorithm gives an improper message: it has no normalising constant
+```
+
+Omitting the keyword gives an undefined log scale as well, but its reason is that the rule
+declares none: a log scale that may exist and that nobody derived. `improper` says that there is
+none to derive. A product of an improper message with a proper one can still be normalised, a
+proper prior on ``v`` here, but its log scale is undefined too.
+
+```@docs
+MessagePassingRulesBase.improper
 ```
 
 ## Undefined log scales
