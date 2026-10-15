@@ -35,11 +35,13 @@ result = @call_message_update_rule(node = Shift, target = :out, m = (in = 1.0,))
 getresult(result), getlogscale(result)   # (2.0, 0)
 ```
 
+- Writing a rule package: start from the template,
+  [MessagePassingRulesTemplate.jl](https://github.com/ReactiveBayes/MessagePassingRulesTemplate.jl),
+  as the guide [Your own rule package](https://reactivebayes.github.io/MessagePassingRulesBase.jl/stable/package/)
+  describes.
 - Documentation: <https://reactivebayes.github.io/MessagePassingRulesBase.jl/stable/>. `make docs`
   builds it locally, into `docs/build`.
 - Tests: `make test` runs the suite as CI does; `make test test_args="tag:alloc name:routing"`
   selects items by tag, by name or by file. `make help` lists the other targets: `docs`,
   `docs-serve`, `format`, `check-format`, `test-fast`.
-- Depends on BayesBase, MacroTools, Compat, FastCholesky, IrrationalConstants and LinearAlgebra:
-  no distribution package and no engine.
-  Julia 1.10 or later. MIT licence.
+- Julia 1.10 or later. MIT licence.

@@ -309,5 +309,7 @@ The same error reaches a model's user when a graph needs a rule that no package 
   and declares what its rules take.
 - [Defining nodes](@ref), [Defining rules](@ref) and the [Keyword reference](@ref keyword-reference)
   cover every option.
+- [Your own rule package](@ref rule-package) puts your nodes and rules in a package, started from
+  the template, with their tests and documentation.
 - To use a node in a model, see [ReactiveMP](https://reactivebayes.github.io/ReactiveMP.jl/dev/)
   and [RxInfer](https://reactivebayes.github.io/RxInfer.jl/stable/).

@@ -21,6 +21,7 @@ makedocs(
             "A node with its own algorithm" => "tutorials/algorithm.md",
             "A new message passing scheme" => "tutorials/new-scheme.md",
         ],
+        "Your own rule package" => "package.md",
         "Defining nodes" => "nodes.md",
         "Defining rules" => "rules.md",
         "Algorithms and dependencies" => "algorithms.md",

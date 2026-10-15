@@ -22,6 +22,7 @@ rule by the node, the target, the [algorithm](@ref glossary-algorithm) and the t
 inputs, in any loaded package. A rule that omits `algorithm` belongs to its node's default
 algorithm, so you declare the node before the rule is loaded.
 
+Rules live in a package; [Your own rule package](@ref rule-package) starts one from the template.
 [Your first node](@ref tutorial-first-node) writes the rules of one node step by step. The
 [Keyword reference](@ref keyword-reference) lists every keyword of the three macros.
 

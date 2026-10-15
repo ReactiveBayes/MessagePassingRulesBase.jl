@@ -8,7 +8,8 @@ MessagePassingRulesBase is the rule system of the ReactiveMP ecosystem. It decla
 [factor nodes](@ref glossary-factor-node) and the [rules](@ref glossary-rule) they compute. It
 finds the rule for a call and runs it, without an inference engine.
 
-This site is for rule authors, who define nodes and rules for a package of their own, and for
+This site is for rule authors, who define nodes and rules for a package of their own, started
+from [the template](@ref rule-package), and for
 students who want to see how a message passing rule works by calling one. Engine authors find
 the calls that look rules up and run them on the [Internals](@ref) page.
 
@@ -70,6 +71,9 @@ part.
   gives a node a parametrised algorithm and declares what its rules take.
   [A new message passing scheme](@ref tutorial-new-scheme) writes natural-gradient message
   passing as an algorithm and its rules.
+- [Your own rule package](@ref rule-package): start a package from
+  [MessagePassingRulesTemplate.jl](https://github.com/ReactiveBayes/MessagePassingRulesTemplate.jl),
+  with its tests, documentation and CI.
 - [Defining nodes](@ref): [`@define_factor_node`](@ref), what a declaration records, and the
   queries that read it.
 - [Defining rules](@ref): the three rule macros, targets, the inputs a rule receives, the slots

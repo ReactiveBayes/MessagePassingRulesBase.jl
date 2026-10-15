@@ -6,6 +6,15 @@ All notable changes to MessagePassingRulesBase.jl are documented here. The forma
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-15
+
+### Changed
+
+- The documentation's guide *Your own rule package*: a rule package starts from the template,
+  [MessagePassingRulesTemplate.jl](https://github.com/ReactiveBayes/MessagePassingRulesTemplate.jl),
+  which the overview, *Your first node*, *Defining rules* and the README now point to. The README
+  no longer lists the dependencies.
+
 ## [1.1.0] - 2026-10-06
 
 ### Added
@@ -35,6 +44,7 @@ The first release: the rule system of the ReactiveMP ecosystem, developed in the
 [ReactiveMP](https://github.com/ReactiveBayes/ReactiveMP.jl) repository, whose history this
 repository keeps.
 
-[Unreleased]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/releases/tag/v1.0.0
