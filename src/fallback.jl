@@ -62,5 +62,7 @@ function (fallback::NodeFunctionRuleFallback)(node, ::Target{E}, args::RuleArgs)
     issetequal(map(first, inputs), Iterators.filter(!=(E), interfaces(node))) || return nothing
     points = NamedTuple{map(first, inputs)}(map(((_, value),) -> fallback.extract(value), inputs))
     f = nodefunction(node)
-    return NodeFunctionLogPdf(x -> f(; points..., (E => x,)...))
+    # The target's keyword as a `NamedTuple` whose names are known at compile time: splatting the
+    # pair `E => x` would build its type at run time on every evaluation.
+    return NodeFunctionLogPdf(x -> f(; points..., NamedTuple{(E,)}((x,))...))
 end

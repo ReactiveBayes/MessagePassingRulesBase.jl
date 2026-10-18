@@ -6,6 +6,14 @@ All notable changes to MessagePassingRulesBase.jl are documented here. The forma
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-10-18
+
+### Fixed
+
+- A `NodeFunctionRuleFallback` message no longer allocates when evaluated: it built its node
+  function's keyword arguments at run time on every call, 700 ns and 16 allocations where the node
+  function takes a few nanoseconds, so a projection of many of them took minutes (#13).
+
 ## [1.1.1] - 2026-10-15
 
 ### Changed
@@ -44,7 +52,8 @@ The first release: the rule system of the ReactiveMP ecosystem, developed in the
 [ReactiveMP](https://github.com/ReactiveBayes/ReactiveMP.jl) repository, whose history this
 repository keeps.
 
-[Unreleased]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/releases/tag/v1.0.0
