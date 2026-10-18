@@ -37,7 +37,7 @@ FooMessagePassingRules/
 │   └── rules/                      one file of test items per node
 ├── docs/src/index.md               one page per node
 ├── Makefile                        test, docs, format: as CI runs them
-└── .github/workflows/              CI, documentation, formatting, CompatHelper, TagBot
+└── .github/workflows/              CI, a weekly run, documentation, formatting, CompatHelper, TagBot
 ```
 
 The package depends on MessagePassingRulesBase and on the distribution packages its rules
@@ -87,4 +87,5 @@ for each pull request, deleted when the pull request closes. The setup script pr
 steps that need you: a `DOCUMENTER_KEY` secret for the deployment, GitHub Pages from the
 `gh-pages` branch, and registration, by commenting `@JuliaRegistrator register` on a commit.
 TagBot then tags the release, and CompatHelper proposes new compat bounds as your dependencies
-release.
+release. Once a week, `Weekly.yml` runs the suite on the latest Julia with the latest release of
+every dependency, so a package that sees no commit still learns when a dependency breaks it.

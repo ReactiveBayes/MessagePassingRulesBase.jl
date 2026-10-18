@@ -6,6 +6,11 @@ All notable changes to MessagePassingRulesBase.jl are documented here. The forma
 
 ## [Unreleased]
 
+### Changed
+
+- The suite runs weekly, and on demand, on the latest Julia with the latest release of every
+  dependency (`Weekly.yml`); the guide *Your own rule package* says so, as the template has it.
+
 ## [1.1.2] - 2026-10-18
 
 ### Fixed
