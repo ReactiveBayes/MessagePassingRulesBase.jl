@@ -41,3 +41,16 @@ end
     @test fallback(N.Grouped, IndexedTarget(:x, 1), RuleArgs(m = (out = PointMass(1.0),))) === nothing
     @test fallback(N.Toy, Target(:b), RuleArgs(q = MessagePassingRulesBase.Marginals(NamedTuple(), Val(((:out, :a),)), (PointMass([1.0, 2.0]),)))) === nothing
 end
+
+@testitem "fallback:node function allocates nothing" tags = [:base, :alloc] setup = [FallbackNodes] begin
+    using MessagePassingRulesBase, BayesBase
+    using MessagePassingRulesBase: RuleArgs, Target
+    N = FallbackNodes
+
+    # A projection evaluates the message many times, so an evaluation must cost no more than the
+    # node function's own call: no allocation, no type built at run time (#13).
+    message = NodeFunctionRuleFallback()(N.Toy, Target(:out), RuleArgs(m = (a = PointMass(1.0),), q = (b = PointMass(2.0),)))
+    evaluate(message, x) = @allocated logpdf(message, x)
+    evaluate(message, 3.0)
+    @test evaluate(message, 3.0) == 0
+end
