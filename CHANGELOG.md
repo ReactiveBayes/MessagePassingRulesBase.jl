@@ -6,10 +6,14 @@ All notable changes to MessagePassingRulesBase.jl are documented here. The forma
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-10-25
+
 ### Changed
 
 - The suite runs weekly, and on demand, on the latest Julia with the latest release of every
   dependency (`Weekly.yml`); the guide *Your own rule package* says so, as the template has it.
+- The test-only compat entry for JET admits 0.13, which needs Julia 1.12; on 1.10 and 1.11 the
+  suite keeps an earlier JET.
 
 ## [1.1.2] - 2026-10-18
 
@@ -57,7 +61,8 @@ The first release: the rule system of the ReactiveMP ecosystem, developed in the
 [ReactiveMP](https://github.com/ReactiveBayes/ReactiveMP.jl) repository, whose history this
 repository keeps.
 
-[Unreleased]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ReactiveBayes/MessagePassingRulesBase.jl/compare/v1.0.0...v1.1.0
