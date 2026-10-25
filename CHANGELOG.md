@@ -10,6 +10,8 @@ All notable changes to MessagePassingRulesBase.jl are documented here. The forma
 
 - The suite runs weekly, and on demand, on the latest Julia with the latest release of every
   dependency (`Weekly.yml`); the guide *Your own rule package* says so, as the template has it.
+- The test-only compat entry for JET admits 0.13, which needs Julia 1.12; on 1.10 and 1.11 the
+  suite keeps an earlier JET.
 
 ## [1.1.2] - 2026-10-18
 
