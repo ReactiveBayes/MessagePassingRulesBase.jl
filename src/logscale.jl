@@ -20,6 +20,9 @@ The causes an engine and the base package record:
 - `:no_compute_logscale`: a product whose pair of distributions has no `compute_logscale`
   method; `detail` is the pair of types;
 - `:form_constraint`: a product whose result a form constraint changed;
+- `:unnormalised_product`: a product with no closed form, such as a `BayesBase.ProductOf`, of
+  messages with known log scales; `detail` is their sum, to which a form constraint that
+  computes the product's normaliser adds its log;
 - `:missing_input`: a message that is `missing` because an input its rule needs is.
 
 A cause outside this list is shown with its `detail`, so an engine may record its own.
@@ -64,6 +67,8 @@ function describe_undefined(io::IO, logscale::UndefinedLogScale)
         print(io, "BayesBase has no `compute_logscale` for the product of ", detail === nothing ? "these distributions" : join(detail, " and "))
     elseif cause === :form_constraint
         print(io, "a form constraint changed the product")
+    elseif cause === :unnormalised_product
+        print(io, "the product has no closed form, and its normaliser is unknown until a form constraint that computes it projects the product")
     elseif cause === :missing_input
         print(io, "the message is missing, since one of the inputs its rule needs is")
     else

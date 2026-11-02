@@ -17,6 +17,8 @@ All notable changes to MessagePassingRulesBase.jl are documented here. The forma
   input, the function at the plugged-in inputs towards `out`), members of groups for a node that
   defines a node function, and the average energy `-E_q[log f]` of a mean-field cluster, through
   the context's expectation backend.
+- `UndefinedLogScale` describes the cause `:unnormalised_product`, a product with no closed form
+  whose normaliser a projection may compute.
 - `expectation` joins `DEFAULT_CONTEXT_SERVICES`: the backend of BayesBase's expectation protocol
   a rule computes expectations with.
 
