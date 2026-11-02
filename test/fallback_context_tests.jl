@@ -73,6 +73,17 @@ end
     @test call_energy_fallback(N.Answers(), N.Toy, nothing, RuleContext(), args) === 1.0
 end
 
+@testitem "unwrap_fallback: a fallback may declare its message's log scale" tags = [:base] begin
+    using MessagePassingRulesBase, BayesBase
+    using MessagePassingRulesBase: unwrap_fallback
+    # An answer with a log scale gives both; any other answer's log scale is undefined.
+    @test unwrap_fallback(with_logscale(PointMass(1.0), -0.5)) === (PointMass(1.0), -0.5)
+    pending = UndefinedLogScale(:unnormalised_product, 0.0)
+    @test unwrap_fallback(with_logscale(PointMass(1.0), pending)) === (PointMass(1.0), pending)
+    result, logscale = unwrap_fallback(PointMass(1.0))
+    @test result === PointMass(1.0) && logscale isa UndefinedLogScale && logscale.cause === :fallback
+end
+
 @testitem "NodeFunctionRuleFallback: the full signature agrees with the three-argument one" tags = [:base] setup = [ContextFallbackNodes] begin
     using MessagePassingRulesBase, BayesBase
     using MessagePassingRulesBase: RuleArgs, RuleContext, Target, call_fallback

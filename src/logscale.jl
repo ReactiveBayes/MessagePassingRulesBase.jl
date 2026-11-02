@@ -140,8 +140,9 @@ isdefined_logscale(logscale) = logscale isa Real
     WithLogScale(result, logscale)
 
 A rule's result paired with its log scale, as [`with_logscale`](@ref) builds it. Only the body of
-a rule declared with `logscale = from_body` returns one, and whoever runs the rule unwraps it; no
-rule receives one, and a caller never sees one.
+a rule declared with `logscale = from_body` returns one, or a rule fallback that knows its
+message's log scale ([`unwrap_fallback`](@ref)), and whoever runs the rule unwraps it; no rule
+receives one, and a caller never sees one.
 """
 struct WithLogScale{R, L}
     result::R

@@ -12,7 +12,8 @@ the node, the target and the rule's arguments. It returns a [message](@ref gloss
 An engine consults the fallback only when [resolution](@ref glossary-resolution) returns a [`RuleNotFound`](@ref). A fallback
 therefore never replaces a rule that exists, and an error inside a rule is never turned into a
 fallback. ReactiveMP takes a fallback as its activation option `rulefallback`. A message that a
-fallback computes has an undefined [log scale](@ref glossary-log-scale).
+fallback computes has an undefined [log scale](@ref glossary-log-scale), unless the fallback
+declares it by returning [`with_logscale`](@ref)`(message, logscale)`.
 
 ## The node function fallback
 
@@ -92,4 +93,5 @@ MessagePassingRulesBase.NodeFunctionLogPdf
 ```@docs
 MessagePassingRulesBase.call_fallback
 MessagePassingRulesBase.call_energy_fallback
+MessagePassingRulesBase.unwrap_fallback
 ```

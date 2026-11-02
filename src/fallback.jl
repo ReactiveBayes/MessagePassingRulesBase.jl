@@ -79,9 +79,25 @@ that wants the algorithm or the context, such as the node instance `ctx.node` or
 backend `ctx.expectation`, adds a method of its own for its type, leaving the target untyped or
 typing it: `call_fallback(::MyFallback, node, target, algorithm, ctx, args)`.
 
+A fallback that knows the log scale of its message returns
+[`with_logscale`](@ref)`(message, logscale)`, which the engine takes apart with
+[`unwrap_fallback`](@ref); any other message has an undefined log scale.
+
 See also [`call_energy_fallback`](@ref), [`NodeFunctionRuleFallback`](@ref).
 """
 call_fallback(fallback, node, target, algorithm, ctx, args) = three_argument_fallback(fallback, node, target, args)
+
+"""
+    unwrap_fallback(answer) -> (result, logscale)
+
+What an engine does with a fallback's answer: the result and its log scale. A fallback that knows
+its message's log scale returns [`with_logscale`](@ref)`(message, logscale)`, a number or an
+[`UndefinedLogScale`](@ref) with its reason, such as `:unnormalised_product` for an unnormalised
+density whose normaliser a form constraint computes; any other answer has the log scale
+`UndefinedLogScale(:fallback)`.
+"""
+unwrap_fallback(answer::WithLogScale) = (answer.result, answer.logscale)
+unwrap_fallback(answer) = (answer, UndefinedLogScale(:fallback))
 
 # One untyped default, so that a fallback's own method, `call_fallback(::MyFallback, node, target,
 # algorithm, ctx, args)`, is more specific than it for every target
