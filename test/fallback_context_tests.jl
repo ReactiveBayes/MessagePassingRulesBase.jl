@@ -34,12 +34,12 @@
         v::Float64
     end
     struct ThreePoints end
-    BayesBase.supports(::ThreePoints, ::Type, ::Type{<:Union{TestNormal, PointMass}}) = true
+    BayesBase.supports_expectation(::ThreePoints, ::Type, ::Type{<:Union{TestNormal, PointMass}}) = true
     function BayesBase.prepare_expectation(::ThreePoints, q::TestNormal)
         s = sqrt(3 * q.v)
-        return BayesBase.PointSet((q.m - s, q.m, q.m + s), (1 / 6, 2 / 3, 1 / 6))
+        return BayesBase.ExpectationPointSet((q.m - s, q.m, q.m + s), (1 / 6, 2 / 3, 1 / 6))
     end
-    BayesBase.prepare_expectation(::ThreePoints, q::PointMass) = BayesBase.PointSet((mean(q),), (1.0,))
+    BayesBase.prepare_expectation(::ThreePoints, q::PointMass) = BayesBase.ExpectationPointSet((mean(q),), (1.0,))
 
     # A fallback with one method for every target, as a fallback's author writes it.
     struct Answers end
