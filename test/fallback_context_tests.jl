@@ -40,6 +40,11 @@
         return BayesBase.PointSet((q.m - s, q.m, q.m + s), (1 / 6, 2 / 3, 1 / 6))
     end
     BayesBase.prepare_expectation(::ThreePoints, q::PointMass) = BayesBase.PointSet((mean(q),), (1.0,))
+
+    # A fallback with one method for every target, as a fallback's author writes it.
+    struct Answers end
+    MessagePassingRulesBase.call_fallback(::Answers, node, target, algorithm, ctx, args) = target
+    MessagePassingRulesBase.call_energy_fallback(::Answers, node, algorithm, ctx, args) = 1.0
 end
 
 @testitem "call_fallback: a three-argument fallback answers messages only" tags = [:base] setup = [ContextFallbackNodes] begin
@@ -55,6 +60,17 @@ end
     @test call_fallback(fallback, N.Toy, ClusterTarget((:out, :a)), nothing, RuleContext(), args) === nothing
     @test call_energy_fallback(fallback, N.Toy, nothing, RuleContext(), args) === nothing
     @test calls[] == 2
+end
+
+@testitem "call_fallback: a fallback's own method answers every target, unambiguously" tags = [:base] setup = [ContextFallbackNodes] begin
+    using MessagePassingRulesBase, BayesBase
+    using MessagePassingRulesBase: RuleArgs, RuleContext, Target, IndexedTarget, ClusterTarget, call_fallback, call_energy_fallback
+    N = ContextFallbackNodes
+    args = RuleArgs(m = (a = PointMass(1.0),))
+    for target in (Target(:out), IndexedTarget(:x, 1), ClusterTarget((:out, :a)))
+        @test call_fallback(N.Answers(), N.Toy, target, nothing, RuleContext(), args) === target
+    end
+    @test call_energy_fallback(N.Answers(), N.Toy, nothing, RuleContext(), args) === 1.0
 end
 
 @testitem "NodeFunctionRuleFallback: the full signature agrees with the three-argument one" tags = [:base] setup = [ContextFallbackNodes] begin

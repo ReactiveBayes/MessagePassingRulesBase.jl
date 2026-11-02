@@ -76,12 +76,17 @@ the arguments. The default asks a three-argument fallback, `fallback(node, targe
 messages only (`Target`, `IndexedTarget`), and answers `nothing` for a marginal
 (`ClusterTarget`): a fallback written for messages is never asked about anything else. A fallback
 that wants the algorithm or the context, such as the node instance `ctx.node` or the expectation
-backend `ctx.expectation`, adds a method of its own.
+backend `ctx.expectation`, adds a method of its own for its type, leaving the target untyped or
+typing it: `call_fallback(::MyFallback, node, target, algorithm, ctx, args)`.
 
 See also [`call_energy_fallback`](@ref), [`NodeFunctionRuleFallback`](@ref).
 """
-call_fallback(fallback, node, target::Union{Target, IndexedTarget}, algorithm, ctx, args) = fallback(node, target, args)
-call_fallback(fallback, node, target::ClusterTarget, algorithm, ctx, args) = nothing
+call_fallback(fallback, node, target, algorithm, ctx, args) = three_argument_fallback(fallback, node, target, args)
+
+# One untyped default, so that a fallback's own method, `call_fallback(::MyFallback, node, target,
+# algorithm, ctx, args)`, is more specific than it for every target
+three_argument_fallback(fallback, node, target::Union{Target, IndexedTarget}, args) = fallback(node, target, args)
+three_argument_fallback(fallback, node, target::ClusterTarget, args) = nothing
 
 """
     call_energy_fallback(fallback, node, algorithm, ctx, args)
