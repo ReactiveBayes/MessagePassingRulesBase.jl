@@ -53,8 +53,8 @@ The message on `out` has the mean `2.0`, so the result is the same. Its variance
 
 ## Where the fallback has nothing
 
-The fallback returns `nothing` for a deterministic node, a node with groups, a member of a
-group, or an input that is a joint marginal. A [deterministic node](@ref glossary-deterministic-node)
+Called with three arguments, the fallback returns `nothing` for a deterministic node, a node
+with groups, a member of a group, or an input that is a joint marginal. A [deterministic node](@ref glossary-deterministic-node)
 has no log-density:
 
 ```jldoctest fallbacks
@@ -68,7 +68,28 @@ julia> NodeFunctionRuleFallback()(Plain, MessagePassingRulesBase.Target(:out), M
 true
 ```
 
+## What an engine passes to a fallback
+
+An engine consults a fallback through [`call_fallback`](@ref MessagePassingRulesBase.call_fallback)
+for a message or a marginal, and [`call_energy_fallback`](@ref MessagePassingRulesBase.call_energy_fallback)
+for an average energy, with the node's algorithm and the [`RuleContext`](@ref) its rules
+receive. A three-argument fallback is asked about messages only. With the full signature,
+`NodeFunctionRuleFallback` also serves:
+
+- a deterministic node, through its function `getnodefn(ctx.node, Target(:out))`: towards an
+  input, the message on `out` pulled back through the function, the other inputs plugged in;
+  towards `out`, the function at the plugged-in inputs, a point mass;
+- a node with groups, a member of a group included;
+- the average energy of a stochastic node whose interfaces each have a marginal,
+  `-E_q[log f]`, computed by the expectation backend `ctx.expectation` when the engine supplies
+  one.
+
 ```@docs
 NodeFunctionRuleFallback
 MessagePassingRulesBase.NodeFunctionLogPdf
+```
+
+```@docs
+MessagePassingRulesBase.call_fallback
+MessagePassingRulesBase.call_energy_fallback
 ```

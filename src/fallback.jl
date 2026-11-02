@@ -66,3 +66,123 @@ function (fallback::NodeFunctionRuleFallback)(node, ::Target{E}, args::RuleArgs)
     # pair `E => x` would build its type at run time on every evaluation.
     return NodeFunctionLogPdf(x -> f(; points..., NamedTuple{(E,)}((x,))...))
 end
+
+"""
+    call_fallback(fallback, node, target, algorithm, ctx, args)
+
+How an engine consults a rule fallback when resolution finds no rule for a message or a marginal:
+with the node, the target, the node's algorithm, the [`RuleContext`](@ref) its rules receive and
+the arguments. The default asks a three-argument fallback, `fallback(node, target, args)`, about
+messages only (`Target`, `IndexedTarget`), and answers `nothing` for a marginal
+(`ClusterTarget`): a fallback written for messages is never asked about anything else. A fallback
+that wants the algorithm or the context, such as the node instance `ctx.node` or the expectation
+backend `ctx.expectation`, adds a method of its own.
+
+See also [`call_energy_fallback`](@ref), [`NodeFunctionRuleFallback`](@ref).
+"""
+call_fallback(fallback, node, target::Union{Target, IndexedTarget}, algorithm, ctx, args) = fallback(node, target, args)
+call_fallback(fallback, node, target::ClusterTarget, algorithm, ctx, args) = nothing
+
+"""
+    call_energy_fallback(fallback, node, algorithm, ctx, args)
+
+How an engine consults a rule fallback when no average energy is defined for a node, a term of
+the free energy: `nothing` by default, so that a fallback written for messages leaves the free
+energy as it was. See [`call_fallback`](@ref).
+"""
+call_energy_fallback(fallback, node, algorithm, ctx, args) = nothing
+
+# With the full signature, `NodeFunctionRuleFallback` also serves deterministic nodes, through the
+# node instance in the context, and nodes with groups; its messages stay plug-in.
+function call_fallback(fallback::NodeFunctionRuleFallback, node, target::Union{Target, IndexedTarget}, algorithm, ctx, args)
+    sdtype(node) isa Deterministic && return deterministic_message(fallback, node, target, ctx, args)
+    isempty(interface_groups(node)) && return fallback(node, target, args)
+    return grouped_message(fallback, node, target, args)
+end
+
+# The average energy -E_q[log f] of a stochastic node, through the context's expectation backend,
+# when every interface has a marginal of its own (a mean-field cluster)
+function call_energy_fallback(fallback::NodeFunctionRuleFallback, node, algorithm, ctx, args)
+    backend = ctx.expectation
+    (isnothing(backend) || !(sdtype(node) isa Stochastic) || !applicable(nodefunction, node)) && return nothing
+    inputs = rule_inputs(node, args.q)
+    all(((key, _),) -> key isa Symbol, inputs) || return nothing
+    issetequal(map(first, inputs), interfaces(node)) || return nothing
+    names = map(first, inputs)
+    f = nodefunction(node)
+    joint = BayesBase.FactorizedJoint(map(last, inputs))
+    return -BayesBase.expectation(backend, values -> f(; NamedTuple{names}(values)...), joint)
+end
+
+# A deterministic node's messages, through its function `getnodefn(ctx.node, Target(:out))` of the
+# inputs in order: towards an input, the message on `out` pulled back through the function, the
+# other inputs plugged in; towards `out`, the function at the plugged-in inputs
+function deterministic_message(fallback, node, target, ctx, args)
+    instance = ctx.node
+    isnothing(instance) && return nothing
+    f = getnodefn(instance, Target(:out))
+    inputs = (rule_inputs(node, args.m)..., rule_inputs(node, args.q)...)
+    values = Dict(inputs)
+    order = input_order(node, inputs, target)
+    isnothing(order) && return nothing
+    if target isa Target{:out}
+        return PointMass(f(map(key -> fallback.extract(values[key]), order)...))
+    end
+    haskey(values, :out) || return nothing
+    outbound = values[:out]
+    position = findfirst(==(target_key(target)), order)
+    points = map(key -> key == target_key(target) ? nothing : fallback.extract(values[key]), order)
+    return NodeFunctionLogPdf(x -> logpdf(outbound, f(Base.setindex(points, x, position)...)))
+end
+
+# The inputs of a deterministic node in its function's order, the target among them: the
+# interfaces after `out`, a group by its members' indices
+function input_order(node, inputs, target)
+    keys = (map(first, inputs)..., target_key(target))
+    order = Any[]
+    for name in Iterators.drop(interfaces(node), 1)
+        if name in interface_groups(node)
+            members = sort!([key[2] for key in keys if key isa Tuple{Symbol, Integer} && key[1] === name])
+            append!(order, [(name, k) for k in members])
+        else
+            name in keys || return nothing
+            push!(order, name)
+        end
+    end
+    return Tuple(order)
+end
+
+target_key(::Target{E}) where {E} = E
+target_key(target::IndexedTarget{E}) where {E} = (E, target.index)
+
+# A stochastic node with groups: every interface but the target collapsed to a point, a group to a
+# tuple of points, and the target, or the target's member of its group, left free
+function grouped_message(fallback, node, target, args)
+    applicable(nodefunction, node) || return nothing
+    inputs = (rule_inputs(node, args.m)..., rule_inputs(node, args.q)...)
+    singles = Dict{Symbol, Any}()
+    members = Dict{Symbol, Dict{Int, Any}}()
+    for (key, value) in inputs
+        if key isa Symbol
+            singles[key] = fallback.extract(value)
+        elseif key isa Tuple{Symbol, Integer}
+            get!(members, key[1], Dict{Int, Any}())[key[2]] = fallback.extract(value)
+        else
+            return nothing # a joint
+        end
+    end
+    E = target isa IndexedTarget ? target_key(target)[1] : target_key(target)
+    names = Tuple(filter(!=(E), interfaces(node)))
+    points = map(names) do name
+        name in interface_groups(node) || return singles[name]
+        group = members[name]
+        return Tuple(group[k] for k in 1:length(group))
+    end
+    fixed = NamedTuple{names}(points)
+    f = nodefunction(node)
+    target isa Target && return NodeFunctionLogPdf(x -> f(; fixed..., NamedTuple{(E,)}((x,))...))
+    k = target.index
+    group = get(members, E, Dict{Int, Any}())
+    n = max(k, maximum(keys(group); init = 0))
+    return NodeFunctionLogPdf(x -> f(; fixed..., NamedTuple{(E,)}((ntuple(j -> j == k ? x : group[j], n),))...))
+end

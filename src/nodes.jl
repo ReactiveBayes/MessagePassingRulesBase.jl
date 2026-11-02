@@ -193,7 +193,9 @@ end
 The log-density of a stochastic node without groups, as a function of keyword arguments named
 after its interfaces: `(; out, μ, v) -> logpdf(node(μ, v), out)`. [`@define_factor_node`](@ref)
 defines it for such a node, which must be callable as a distribution of its other interfaces.
-The rule fallback [`NodeFunctionRuleFallback`](@ref) and rule verification use it.
+The rule fallback [`NodeFunctionRuleFallback`](@ref) and rule verification use it. A node with
+groups has none generated, since a group has no positional meaning; it may define one by hand,
+taking each group as a tuple, to be served by the fallback.
 
 # Throws
 `MethodError` for a deterministic node, a node with groups, or an undeclared one.
