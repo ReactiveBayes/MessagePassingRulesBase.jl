@@ -17,6 +17,9 @@ All notable changes to MessagePassingRulesBase.jl are documented here. The forma
   input, the function at the plugged-in inputs towards `out`), members of groups for a node that
   defines a node function, and the average energy `-E_q[log f]` of a mean-field cluster, through
   the context's expectation backend.
+- `with_outcome(answer, outcome)` and `unwrap_outcome(answer)`: a rule fallback may say how it
+  computed its answer, such as whether a joint Laplace approximation converged, for an engine's
+  events and an inference report to read.
 - A fallback may declare its message's log scale by returning `with_logscale(message,
   logscale)`; `unwrap_fallback(answer)` gives an engine the message and its log scale,
   `UndefinedLogScale(:fallback)` for any other answer.

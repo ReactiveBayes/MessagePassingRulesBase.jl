@@ -84,6 +84,17 @@ end
     @test result === PointMass(1.0) && logscale isa UndefinedLogScale && logscale.cause === :fallback
 end
 
+@testitem "unwrap_outcome: a fallback may say how it computed its answer" tags = [:base] begin
+    using MessagePassingRulesBase, BayesBase
+    using MessagePassingRulesBase: with_outcome, unwrap_outcome, unwrap_fallback
+    outcome = (method = :joint_laplace, converged = true, iterations = 6)
+    @test unwrap_outcome(with_outcome(PointMass(1.0), outcome)) === (PointMass(1.0), outcome)
+    @test unwrap_outcome(PointMass(1.0)) === (PointMass(1.0), nothing)
+    # outside a log scale: the outcome first, then the message and its log scale
+    answer, got = unwrap_outcome(with_outcome(with_logscale(PointMass(1.0), -0.5), outcome))
+    @test got === outcome && unwrap_fallback(answer) === (PointMass(1.0), -0.5)
+end
+
 @testitem "NodeFunctionRuleFallback: the full signature agrees with the three-argument one" tags = [:base] setup = [ContextFallbackNodes] begin
     using MessagePassingRulesBase, BayesBase
     using MessagePassingRulesBase: RuleArgs, RuleContext, Target, call_fallback

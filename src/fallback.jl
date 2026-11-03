@@ -99,6 +99,39 @@ density whose normaliser a form constraint computes; any other answer has the lo
 unwrap_fallback(answer::WithLogScale) = (answer.result, answer.logscale)
 unwrap_fallback(answer) = (answer, UndefinedLogScale(:fallback))
 
+"""
+    WithOutcome(answer, outcome)
+
+A rule fallback's answer paired with how it was computed, as [`with_outcome`](@ref) builds it. An
+engine takes it apart with [`unwrap_outcome`](@ref) before anything else; no rule receives one.
+"""
+struct WithOutcome{A, O}
+    answer::A
+    outcome::O
+end
+
+"""
+    with_outcome(answer, outcome)
+
+Pair a rule fallback's answer, a message, a joint marginal or an average energy, with how the
+fallback computed it: plain data, such as `(method = :joint_laplace, converged = true,
+iterations = 6)`, which an engine hands on to its events and a report reads. The answer may itself
+be [`with_logscale`](@ref)`(message, logscale)`; `with_outcome` goes outside it.
+
+See also [`unwrap_outcome`](@ref).
+"""
+with_outcome(answer, outcome) = WithOutcome(answer, outcome)
+
+"""
+    unwrap_outcome(answer) -> (answer, outcome)
+
+What an engine does first with a fallback's answer: the answer without its outcome, and the
+outcome a fallback declared with [`with_outcome`](@ref), `nothing` for any other answer. The
+answer then goes to [`unwrap_fallback`](@ref) for a message.
+"""
+unwrap_outcome(answer::WithOutcome) = (answer.answer, answer.outcome)
+unwrap_outcome(answer) = (answer, nothing)
+
 # One untyped default, so that a fallback's own method, `call_fallback(::MyFallback, node, target,
 # algorithm, ctx, args)`, is more specific than it for every target
 three_argument_fallback(fallback, node, target::Union{Target, IndexedTarget}, args) = fallback(node, target, args)
