@@ -6,6 +6,32 @@ All notable changes to MessagePassingRulesBase.jl are documented here. The forma
 
 ## [Unreleased]
 
+### Added
+
+- `call_fallback(fallback, node, target, algorithm, ctx, args)` and
+  `call_energy_fallback(fallback, node, algorithm, ctx, args)`, how an engine consults a rule
+  fallback, with the node's algorithm and the rule context. A three-argument fallback keeps
+  working, asked about messages only.
+- `NodeFunctionRuleFallback` with the full signature serves deterministic nodes, through the
+  node instance in the context (the message on `out` pulled back through the function towards an
+  input, the function at the plugged-in inputs towards `out`), members of groups for a node that
+  defines a node function, and the average energy `-E_q[log f]` of a mean-field cluster, through
+  the context's expectation backend.
+- `with_outcome(answer, outcome)` and `unwrap_outcome(answer)`: a rule fallback may say how it
+  computed its answer, such as whether a joint Laplace approximation converged, for an engine's
+  events and an inference report to read.
+- A fallback may declare its message's log scale by returning `with_logscale(message,
+  logscale)`; `unwrap_fallback(answer)` gives an engine the message and its log scale,
+  `UndefinedLogScale(:fallback)` for any other answer.
+- `UndefinedLogScale` describes the cause `:unnormalised_product`, a product with no closed form
+  whose normaliser a projection may compute.
+- `expectation` joins `DEFAULT_CONTEXT_SERVICES`: the backend of BayesBase's expectation protocol
+  a rule computes expectations with.
+
+### Changed
+
+- BayesBase 1.7 is required, for its expectation protocol.
+
 ## [1.1.3] - 2026-10-25
 
 ### Changed

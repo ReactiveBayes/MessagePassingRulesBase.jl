@@ -85,7 +85,8 @@ export RuleResult, getresult, getrule, getannotations
 # Inspecting and checking the rules that exist.
 @compat public Registry, registries, registered_rules, registered_nodes, registered_dependencies, duplicate_rules
 @compat public list_rules, RuleCoverage, rule_coverage, check_rules, RuleIssue, check_rule_ambiguities
-@compat public NodeFunctionLogPdf, drawing, Drawing
+@compat public NodeFunctionLogPdf, call_fallback, call_energy_fallback, unwrap_fallback, drawing, Drawing
+@compat public WithOutcome, with_outcome, unwrap_outcome
 @compat public as_target, as_cluster, interactive_args, add_selection_observer!
 
 @compat public add_outer, trace_product, negate!!, scale!!, scaled_outer, diageye, promote_cluster
