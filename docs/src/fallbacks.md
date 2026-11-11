@@ -19,8 +19,9 @@ it computed its answer, for an engine's events and a report to read, by returnin
 
 ## The node function fallback
 
-[`NodeFunctionRuleFallback`](@ref) is the fallback this package provides. It applies to a
-[stochastic node](@ref glossary-stochastic-node) without groups. Its message towards a target is
+[`NodeFunctionRuleFallback`](@ref) is the fallback this package provides. Called on its own, it
+applies to a [stochastic node](@ref glossary-stochastic-node) without groups; an engine, which
+passes it more (see below), gets more. Its message towards a target is
 the node's log-density as a function of the target, with every other input collapsed to a point,
 by default its mean. The message is a [`NodeFunctionLogPdf`](@ref), an unnormalised
 log-density. A form constraint, or a product with a proper distribution, turns it into a

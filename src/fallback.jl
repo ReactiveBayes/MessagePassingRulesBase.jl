@@ -15,11 +15,16 @@ undefined.
 # Returns
 Called as `fallback(node, target, args)`: a [`NodeFunctionLogPdf`](@ref), or `nothing` where the
 node function does not apply: a deterministic node, a node with groups, a member of a group, an
-input that is a joint, or an interface other than the target that has no input.
+input that is a joint, or an interface other than the target that has no input. Consulted by an
+engine through [`call_fallback`](@ref), with the node's rule context, it also serves
+deterministic nodes, through the node instance's function, and members of groups; through
+[`call_energy_fallback`](@ref) it gives the average energy `-E_q[log f]` of a mean-field cluster.
 
 An engine consults a fallback only when resolution finds no rule, so an error inside a rule is
 never turned into a fallback; ReactiveMP takes it as the activation option `rulefallback`. A
-fallback of one's own is any callable of `(node, target, args)` returning a message or `nothing`.
+fallback of one's own is any callable of `(node, target, args)` returning a message or `nothing`,
+or a type with its own [`call_fallback`](@ref) method, which also receives the node's algorithm
+and rule context and may answer for marginals and average energies.
 
 # Examples
 
@@ -39,9 +44,10 @@ NodeFunctionRuleFallback() = NodeFunctionRuleFallback(mean)
 """
     NodeFunctionLogPdf(logpdf)
 
-The message a [`NodeFunctionRuleFallback`](@ref) computes: an unnormalised log-density, supported
-everywhere. `BayesBase.logpdf(d, x)` and `d(x)` are both `logpdf(x)`, and `insupport(d, x)` is
-always `true`.
+A message given by an unnormalised log-density, supported everywhere: the message a
+[`NodeFunctionRuleFallback`](@ref) computes, and the form other rule fallbacks give theirs, such
+as a log-density pulled back through a deterministic function or averaged over other inputs.
+`BayesBase.logpdf(d, x)` and `d(x)` are both `logpdf(x)`, and `insupport(d, x)` is always `true`.
 """
 struct NodeFunctionLogPdf{F}
     logpdf::F
@@ -50,7 +56,7 @@ end
 BayesBase.logpdf(d::NodeFunctionLogPdf, x) = d.logpdf(x)
 BayesBase.insupport(::NodeFunctionLogPdf, x) = true
 (d::NodeFunctionLogPdf)(x) = logpdf(d, x)
-Base.show(io::IO, ::NodeFunctionLogPdf) = print(io, "NodeFunctionLogPdf(the node's log-density, other inputs fixed)")
+Base.show(io::IO, ::NodeFunctionLogPdf) = print(io, "NodeFunctionLogPdf(an unnormalised log-density)")
 
 (fallback::NodeFunctionRuleFallback)(node, target, args) = nothing
 
