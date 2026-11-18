@@ -16,8 +16,8 @@ The services an engine supplies by default, [`DEFAULT_CONTEXT_SERVICES`](@ref):
   `nothing`, and each rule then applies its own default; a rule reads it through
   [`matrix_correction`](@ref)`(ctx, default)`. MatrixCorrectionTools' `NoCorrection()` is an
   explicit identity.
-- `expectation`: the backend of BayesBase's expectation protocol a rule computes expectations
-  with, `BayesBase.expectation(ctx.expectation, f, q)`, or `nothing` when the engine has none.
+- `expectation`: the backend that a rule passes to BayesBase's expectation protocol,
+  `BayesBase.expectation(ctx.expectation, f, q)`, or `nothing` when the engine has none.
 
 A mutable object holding the services as a typed `NamedTuple`: a caller builds one and passes
 it to every call by reference, and reading a service is inferred. `propertynames(ctx)` gives

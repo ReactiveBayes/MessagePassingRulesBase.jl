@@ -15,16 +15,18 @@ undefined.
 # Returns
 Called as `fallback(node, target, args)`: a [`NodeFunctionLogPdf`](@ref), or `nothing` where the
 node function does not apply: a deterministic node, a node with groups, a member of a group, an
-input that is a joint, or an interface other than the target that has no input. Consulted by an
-engine through [`call_fallback`](@ref), with the node's rule context, it also serves
-deterministic nodes, through the node instance's function, and members of groups; through
-[`call_energy_fallback`](@ref) it gives the average energy `-E_q[log f]` of a mean-field cluster.
+input that is a joint, or an interface other than the target that has no input. Through
+[`call_fallback`](@ref), which an engine calls with the node's rule context, it also computes
+messages for a deterministic node, from the node instance's function, and for a node with
+groups. Through [`call_energy_fallback`](@ref) it computes the average energy `-E_q[log f]` of a
+mean-field cluster.
 
 An engine consults a fallback only when resolution finds no rule, so an error inside a rule is
 never turned into a fallback; ReactiveMP takes it as the activation option `rulefallback`. A
-fallback of one's own is any callable of `(node, target, args)` returning a message or `nothing`,
-or a type with its own [`call_fallback`](@ref) method, which also receives the node's algorithm
-and rule context and may answer for marginals and average energies.
+user-defined fallback is any callable of `(node, target, args)` that returns a message or
+`nothing`. A fallback type can instead define a method of [`call_fallback`](@ref), which also
+receives the node's algorithm and rule context and can answer for marginals, and a method of
+[`call_energy_fallback`](@ref) to answer for average energies.
 
 # Examples
 
@@ -44,9 +46,10 @@ NodeFunctionRuleFallback() = NodeFunctionRuleFallback(mean)
 """
     NodeFunctionLogPdf(logpdf)
 
-A message given by an unnormalised log-density, supported everywhere: the message a
-[`NodeFunctionRuleFallback`](@ref) computes, and the form other rule fallbacks give theirs, such
-as a log-density pulled back through a deterministic function or averaged over other inputs.
+A message given by an unnormalised log-density, supported everywhere.
+[`NodeFunctionRuleFallback`](@ref) returns its messages in this form, and other rule fallbacks
+can use it too, for example for a log-density pulled back through a deterministic function or
+averaged over other inputs.
 `BayesBase.logpdf(d, x)` and `d(x)` are both `logpdf(x)`, and `insupport(d, x)` is always `true`.
 """
 struct NodeFunctionLogPdf{F}
@@ -76,18 +79,21 @@ end
 """
     call_fallback(fallback, node, target, algorithm, ctx, args)
 
-How an engine consults a rule fallback when resolution finds no rule for a message or a marginal:
-with the node, the target, the node's algorithm, the [`RuleContext`](@ref) its rules receive and
-the arguments. The default asks a three-argument fallback, `fallback(node, target, args)`, about
-messages only (`Target`, `IndexedTarget`), and answers `nothing` for a marginal
-(`ClusterTarget`): a fallback written for messages is never asked about anything else. A fallback
-that wants the algorithm or the context, such as the node instance `ctx.node` or the expectation
-backend `ctx.expectation`, adds a method of its own for its type, leaving the target untyped or
-typing it: `call_fallback(::MyFallback, node, target, algorithm, ctx, args)`.
+Consult the rule `fallback` for a message or a marginal that has no rule. An engine calls this
+when resolution finds no rule, with the node, the target, the node's algorithm, the
+[`RuleContext`](@ref) that the node's rules receive, and the rule's arguments.
+
+The default method calls a three-argument fallback, `fallback(node, target, args)`, for a
+message (a `Target` or an `IndexedTarget`) and returns `nothing` for a marginal (a
+`ClusterTarget`), so a fallback written for messages is only asked for messages. A fallback that
+needs the algorithm or the context, for example the node instance `ctx.node` or the expectation
+backend `ctx.expectation`, defines a method for its type,
+`call_fallback(::MyFallback, node, target, algorithm, ctx, args)`, with `target` untyped or
+restricted to the targets it handles.
 
 A fallback that knows the log scale of its message returns
-[`with_logscale`](@ref)`(message, logscale)`, which the engine takes apart with
-[`unwrap_fallback`](@ref); any other message has an undefined log scale.
+[`with_logscale`](@ref)`(message, logscale)`, and the engine separates the two with
+[`unwrap_fallback`](@ref). Any other message has an undefined log scale.
 
 See also [`call_energy_fallback`](@ref), [`NodeFunctionRuleFallback`](@ref).
 """
@@ -96,11 +102,11 @@ call_fallback(fallback, node, target, algorithm, ctx, args) = three_argument_fal
 """
     unwrap_fallback(answer) -> (result, logscale)
 
-What an engine does with a fallback's answer: the result and its log scale. A fallback that knows
-its message's log scale returns [`with_logscale`](@ref)`(message, logscale)`, a number or an
-[`UndefinedLogScale`](@ref) with its reason, such as `:unnormalised_product` for an unnormalised
-density whose normaliser a form constraint computes; any other answer has the log scale
-`UndefinedLogScale(:fallback)`.
+Split a fallback's answer into its result and the result's log scale. For an answer built with
+[`with_logscale`](@ref)`(message, logscale)`, return the message and `logscale`. The log scale is
+a number or an [`UndefinedLogScale`](@ref) with its cause, such as `:unnormalised_product` for an
+unnormalised density whose normaliser a form constraint computes. For any other answer, return
+the answer and `UndefinedLogScale(:fallback)`.
 """
 unwrap_fallback(answer::WithLogScale) = (answer.result, answer.logscale)
 unwrap_fallback(answer) = (answer, UndefinedLogScale(:fallback))
@@ -119,10 +125,11 @@ end
 """
     with_outcome(answer, outcome)
 
-Pair a rule fallback's answer, a message, a joint marginal or an average energy, with how the
-fallback computed it: plain data, such as `(method = :joint_laplace, converged = true,
-iterations = 6)`, which an engine hands on to its events and a report reads. The answer may itself
-be [`with_logscale`](@ref)`(message, logscale)`; `with_outcome` goes outside it.
+Pair a rule fallback's answer, which is a message, a joint marginal or an average energy, with a
+description of how the fallback computed it. The outcome is plain data, such as
+`(method = :joint_laplace, converged = true, iterations = 6)`. An engine passes it on to its
+events, where an inference report can read it. An answer with a log scale is wrapped from the
+outside: `with_outcome(with_logscale(message, logscale), outcome)`.
 
 See also [`unwrap_outcome`](@ref).
 """
@@ -131,9 +138,9 @@ with_outcome(answer, outcome) = WithOutcome(answer, outcome)
 """
     unwrap_outcome(answer) -> (answer, outcome)
 
-What an engine does first with a fallback's answer: the answer without its outcome, and the
-outcome a fallback declared with [`with_outcome`](@ref), `nothing` for any other answer. The
-answer then goes to [`unwrap_fallback`](@ref) for a message.
+Split a fallback's answer into the answer and the outcome declared with
+[`with_outcome`](@ref). For any other answer, the outcome is `nothing`. An engine calls this
+first; for a message, it then passes the answer to [`unwrap_fallback`](@ref).
 """
 unwrap_outcome(answer::WithOutcome) = (answer.answer, answer.outcome)
 unwrap_outcome(answer) = (answer, nothing)
@@ -146,9 +153,10 @@ three_argument_fallback(fallback, node, target::ClusterTarget, args) = nothing
 """
     call_energy_fallback(fallback, node, algorithm, ctx, args)
 
-How an engine consults a rule fallback when no average energy is defined for a node, a term of
-the free energy: `nothing` by default, so that a fallback written for messages leaves the free
-energy as it was. See [`call_fallback`](@ref).
+Consult the rule `fallback` for the average energy of a node, its term of the free energy, when
+the node has none defined. The default returns `nothing`, so a fallback written for messages
+does not change the free energy. A fallback type answers by defining a method, as for
+[`call_fallback`](@ref).
 """
 call_energy_fallback(fallback, node, algorithm, ctx, args) = nothing
 

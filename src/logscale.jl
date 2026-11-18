@@ -20,9 +20,9 @@ The causes an engine and the base package record:
 - `:no_compute_logscale`: a product whose pair of distributions has no `compute_logscale`
   method; `detail` is the pair of types;
 - `:form_constraint`: a product whose result a form constraint changed;
-- `:unnormalised_product`: a product with no closed form, such as a `BayesBase.ProductOf`, of
-  messages with known log scales; `detail` is their sum, to which a form constraint that
-  computes the product's normaliser adds its log;
+- `:unnormalised_product`: a product of messages with known log scales that has no closed
+  form, such as a `BayesBase.ProductOf`; `detail` is the sum of their log scales, and a form
+  constraint that computes the product's normaliser adds the normaliser's log to it;
 - `:missing_input`: a message that is `missing` because an input its rule needs is.
 
 A cause outside this list is shown with its `detail`, so an engine may record its own.
@@ -139,10 +139,10 @@ isdefined_logscale(logscale) = logscale isa Real
 """
     WithLogScale(result, logscale)
 
-A rule's result paired with its log scale, as [`with_logscale`](@ref) builds it. Only the body of
-a rule declared with `logscale = from_body` returns one, or a rule fallback that knows its
-message's log scale ([`unwrap_fallback`](@ref)), and whoever runs the rule unwraps it; no rule
-receives one, and a caller never sees one.
+A rule's result paired with its log scale, as [`with_logscale`](@ref) builds it. It is returned
+only by the body of a rule declared with `logscale = from_body` and by a rule fallback that knows
+its message's log scale (see [`unwrap_fallback`](@ref)). Whoever runs the rule or the fallback
+unwraps it, so no rule receives one and a caller never sees one.
 """
 struct WithLogScale{R, L}
     result::R
