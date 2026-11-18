@@ -9,5 +9,3 @@ MessagePassingRulesBase = "4a5b64c7-30c9-4471-82f2-bbe8464b157d"
 
 [sources]
 MessagePassingRulesBase = {path = ".."}
-# TEMPORARY: BayesBase's expectation protocol (1.7), until it is released
-BayesBase = {url = "https://github.com/ReactiveBayes/BayesBase.jl", rev = "universal-inference"}
