@@ -12,12 +12,17 @@ the node, the target and the rule's arguments. It returns a [message](@ref gloss
 An engine consults the fallback only when [resolution](@ref glossary-resolution) returns a [`RuleNotFound`](@ref). A fallback
 therefore never replaces a rule that exists, and an error inside a rule is never turned into a
 fallback. ReactiveMP takes a fallback as its activation option `rulefallback`. A message that a
-fallback computes has an undefined [log scale](@ref glossary-log-scale).
+fallback computes has an undefined [log scale](@ref glossary-log-scale) unless the fallback
+returns [`with_logscale`](@ref)`(message, logscale)`. A fallback can also report how it computed
+its answer by returning [`with_outcome`](@ref MessagePassingRulesBase.with_outcome)`(answer, outcome)`.
+The engine passes the outcome on to its events, where an inference report can read it.
 
 ## The node function fallback
 
-[`NodeFunctionRuleFallback`](@ref) is the fallback this package provides. It applies to a
-[stochastic node](@ref glossary-stochastic-node) without groups. Its message towards a target is
+[`NodeFunctionRuleFallback`](@ref) is the fallback this package provides. Called with three
+arguments, it applies to a [stochastic node](@ref glossary-stochastic-node) without groups. An
+engine calls it with more information and gets messages for more kinds of nodes, see
+[What an engine passes to a fallback](@ref). Its message towards a target is
 the node's log-density as a function of the target, with every other input collapsed to a point,
 by default its mean. The message is a [`NodeFunctionLogPdf`](@ref), an unnormalised
 log-density. A form constraint, or a product with a proper distribution, turns it into a
@@ -53,8 +58,8 @@ The message on `out` has the mean `2.0`, so the result is the same. Its variance
 
 ## Where the fallback has nothing
 
-The fallback returns `nothing` for a deterministic node, a node with groups, a member of a
-group, or an input that is a joint marginal. A [deterministic node](@ref glossary-deterministic-node)
+Called with three arguments, the fallback returns `nothing` for a deterministic node, a node
+with groups, a member of a group, or an input that is a joint marginal. A [deterministic node](@ref glossary-deterministic-node)
 has no log-density:
 
 ```jldoctest fallbacks
@@ -68,7 +73,38 @@ julia> NodeFunctionRuleFallback()(Plain, MessagePassingRulesBase.Target(:out), M
 true
 ```
 
+## What an engine passes to a fallback
+
+An engine does not call a fallback directly. It calls
+[`call_fallback`](@ref MessagePassingRulesBase.call_fallback) for a message or a marginal, and
+[`call_energy_fallback`](@ref MessagePassingRulesBase.call_energy_fallback) for an average
+energy. Both also receive the node's algorithm and the [`RuleContext`](@ref) that the node's
+rules receive. By default, `call_fallback` calls a three-argument fallback for a message and
+returns `nothing` for a marginal, and `call_energy_fallback` returns `nothing`.
+
+`NodeFunctionRuleFallback` has its own methods of both, which use the context to cover more
+cases:
+
+- A deterministic node, through its function `getnodefn(ctx.node, Target(:out))`. The message
+  towards an input is the message on `out` pulled back through the function, with the other
+  inputs collapsed to points. The message towards `out` is a point mass at the function's value
+  at those points.
+- A stochastic node with groups, including the members of a group, when the node defines a node
+  function.
+- The average energy `-E_q[log f]` of a stochastic node whose interfaces each have their own
+  marginal. The expectation backend `ctx.expectation` computes it; when the engine supplies no
+  backend, the average energy is `nothing`.
+
 ```@docs
 NodeFunctionRuleFallback
 MessagePassingRulesBase.NodeFunctionLogPdf
+```
+
+```@docs
+MessagePassingRulesBase.call_fallback
+MessagePassingRulesBase.call_energy_fallback
+MessagePassingRulesBase.unwrap_fallback
+MessagePassingRulesBase.with_outcome
+MessagePassingRulesBase.unwrap_outcome
+MessagePassingRulesBase.WithOutcome
 ```

@@ -608,7 +608,7 @@ getresult(@call_message_update_rule(node = Square, target = :out, m = (in = Norm
 
 `ctx` lists the context [services](@ref glossary-service) the rule reads, as a tuple of symbols,
 `ctx = (:rng,)`. The body reads each from its `ctx` slot as `ctx.name`. Default: `()`, none. An
-engine supplies `node`, `rng` and `matrix_correction` ([`DEFAULT_CONTEXT_SERVICES`](@ref)), and
+engine supplies `node`, `rng`, `matrix_correction` and `expectation` ([`DEFAULT_CONTEXT_SERVICES`](@ref)), and
 any other name is allowed for a service of the caller's own. An engine refuses a rule whose
 services its context lacks ([`check_services`](@ref)); a call by hand does not check, and a
 missing service reads as `nothing`. See [The rule context](@ref "The rule context").

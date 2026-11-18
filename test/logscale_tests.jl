@@ -90,6 +90,7 @@ end
     @test contains(sprint(showerror, UndefinedLogScaleError(UndefinedLogScale(:no_compute_logscale, (Int, Float64)))), "Int64 and Float64")
     @test repr(undefined) == "UndefinedLogScale(:initial)"
     @test contains(repr(MIME"text/plain"(), UndefinedLogScale(:form_constraint)), "form constraint")
+    @test contains(repr(MIME"text/plain"(), UndefinedLogScale(:unnormalised_product, -0.5)), "no closed form")
     @test contains(sprint(showerror, UndefinedLogScaleError(UndefinedLogScale(:missing_input))), "the message is missing")
     @test contains(sprint(showerror, UndefinedLogScaleError(UndefinedLogScale(:fallback))), "computed by a rule fallback")
     # A cause of an engine's own is shown with its detail.
